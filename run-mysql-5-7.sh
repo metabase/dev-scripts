@@ -2,9 +2,9 @@
 
 echo "Removing existing container..."
 
-docker kill mysql-5-7 || echo "Nothing to kill"
+docker kill mysql-5-7 2>/dev/null || echo "Nothing to kill"
 
-docker rm mysql-5-7 || echo "Nothing to remove"
+docker rm mysql-5-7 2>/dev/null || echo "Nothing to remove"
 
 docker run -p 3307:3306 \
        --name mysql-5-7 \

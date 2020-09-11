@@ -2,9 +2,9 @@
 
 echo "Removing existing container..."
 
-docker kill presto || echo "Nothing to kill"
+docker kill presto 2>/dev/null || echo "Nothing to kill"
 
-docker rm presto || echo "Nothing to remove"
+docker rm presto 2>/dev/null || echo "Nothing to remove"
 
 docker run -p 8080:8080 \
        --name presto \
