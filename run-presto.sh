@@ -10,3 +10,5 @@ docker run -p 8080:8080 \
        --name presto \
        --rm \
        -d metabase/presto-mb-ci
+
+echo "Started Presto on port 8080."

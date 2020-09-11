@@ -10,3 +10,5 @@ docker run -p 10000:10000 \
        --name sparksql \
        --rm \
        -d metabase/spark:2.1.1
+
+echo "Started Spark SQL 2.1.1 on port 10000."

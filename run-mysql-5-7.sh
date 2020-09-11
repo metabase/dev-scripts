@@ -17,4 +17,4 @@ echo "jdbc:mysql://localhost:3307/circle_test?user=root"
 echo
 echo "MB_DB_TYPE=mysql MB_DB_DBNAME=circle_test MB_DB_HOST=localhost MB_DB_PASS='' MB_DB_PORT=3307 MB_DB_USER=root MB_MYSQL_TEST_USER=root"
 echo
-echo "mysql --user=root --host=127.0.01 --port=3307 --database=circle_test"
+echo "mysql --user=root --host=127.0.0.1 --port=3307 --database=circle_test"

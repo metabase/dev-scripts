@@ -13,3 +13,11 @@ docker run -p 3306:3306 \
        --name maria-db-latest \
        --rm \
        -d mariadb:latest
+
+echo "Started MariaDB latest on port 3306."
+echo
+echo "jdbc:mysql://localhost:3306/metabase_test?user=root"
+echo
+echo "MB_DB_TYPE=mysql MB_DB_DBNAME=metabase_test MB_DB_HOST=localhost MB_DB_PASS='' MB_DB_PORT=3306 MB_DB_USER=root MB_MYSQL_TEST_USER=root"
+echo
+echo "mysql --user=root --host=127.0.0.1 --port=3306 --database=metabase_test"
