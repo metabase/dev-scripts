@@ -1,10 +1,9 @@
 #! /usr/bin/env bash
 
-echo "Removing existing container..."
+SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
+source "$SOURCE_DIR/common.sh"
 
-docker kill mysql-5-7 2>/dev/null || echo "Nothing to kill"
-
-docker rm mysql-5-7 2>/dev/null || echo "Nothing to remove"
+kill-existing mysql-5-7
 
 docker run -p 3307:3306 \
        --name mysql-5-7 \
