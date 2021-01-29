@@ -1,0 +1,163 @@
+version: "3"
+services:
+    zookeeper:
+      image: 'bitnami/zookeeper:3.6.2'
+      container_name: zookeeper
+      hostname: zookeper
+      networks:
+      - druid-network
+      ports:
+      - 2181:2181
+      environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_ENABLE_AUTH=no
+      - ZOO_SERVER_USERS=zookeper
+      - ZOO_SERVER_PASSWORDS=zookeper
+      - ZOO_CLIENT_USER=zookeper
+      - ZOO_CLIENT_PASSWORD=zookeper
+    druid_db:
+      image: postgres:13.0-alpine
+      hostname: druid_db
+      container_name: druid_db
+      networks:
+      - druid-network
+      volumes:
+      - $PWD/druid_db:/var/lib/postgresql/data
+      environment: 
+      - POSTGRES_USER=druid
+      - POSTGRES_DB=druid
+      - POSTGRES_PASSWORD=druid
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U druid"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+    druid_coordinator:
+      image: apache/druid:0.20.0
+      container_name: druid_coordinator
+      hostname: druid_coordinator 
+      volumes:
+      - $PWD/druid_storage:/opt/data
+      - $PWD/druid_vars:/opt/druid/var
+      - $PWD/druid_vars/tmp/druid:/opt/druid/var/druid
+      - $PWD/druid_vars/tmp/druid/segments:/opt/druid/var/druid/segments
+      - $PWD/druid_vars/tmp/druid/indexing-logs:/opt/druid/var/druid/indexing-logs
+      - $PWD/druid_vars/tmp/druid/task:/opt/druid/var/druid/task
+      - $PWD/druid_vars/tmp/druid/hadoop-tmp:/opt/druid/var/druid/hadoop-tmp
+      - $PWD/druid_vars/tmp/druid/segment-cache:/opt/druid/var/druid/segment-cache
+      depends_on: 
+      - zookeeper
+      - druid_db
+      networks:
+      - druid-network
+      ports:
+      - 8081:8081
+      command:
+      - coordinator
+      env_file:
+      - druid_environment_file
+    druid_broker:
+      image: apache/druid:0.20.0
+      container_name: druid_broker
+      hostname: druid_broker
+      volumes:
+      - $PWD/druid_vars:/opt/druid/var
+      - $PWD/druid_vars/tmp/druid:/opt/druid/var/druid
+      - $PWD/druid_vars/tmp/druid/segments:/opt/druid/var/druid/segments
+      - $PWD/druid_vars/tmp/druid/indexing-logs:/opt/druid/var/druid/indexing-logs
+      - $PWD/druid_vars/tmp/druid/task:/opt/druid/var/druid/task
+      - $PWD/druid_vars/tmp/druid/hadoop-tmp:/opt/druid/var/druid/hadoop-tmp
+      - $PWD/druid_vars/tmp/druid/segment-cache:/opt/druid/var/druid/segment-cache
+      networks:
+      - druid-network
+      depends_on: 
+      - zookeeper
+      - druid_db
+      - druid_coordinator
+      ports:
+      - 8082:8082
+      command:
+      - broker
+      env_file:
+      - druid_environment_file
+    druid_historical:
+      image: apache/druid:0.20.0
+      container_name: druid_historical
+      volumes:
+      - $PWD/druid_storage:/opt/data
+      - $PWD/druid_vars:/opt/druid/var
+      - $PWD/druid_vars/tmp/druid:/opt/druid/var/druid
+      - $PWD/druid_vars/tmp/druid/segments:/opt/druid/var/druid/segments
+      - $PWD/druid_vars/tmp/druid/indexing-logs:/opt/druid/var/druid/indexing-logs
+      - $PWD/druid_vars/tmp/druid/task:/opt/druid/var/druid/task
+      - $PWD/druid_vars/tmp/druid/hadoop-tmp:/opt/druid/var/druid/hadoop-tmp
+      - $PWD/druid_vars/tmp/druid/segment-cache:/opt/druid/var/druid/segment-cache
+      - $PWD/druid_vars/tmp/druid/segment-cache/info_dir:/opt/druid/var/druid/segment-cache/info_dir
+      networks:
+      - druid-network
+      depends_on: 
+      - zookeeper
+      - druid_db
+      - druid_coordinator
+      ports:
+      - 8083:8083
+      command:
+      - historical
+      env_file:
+      - druid_environment_file
+    druid_middlemanager:
+      image: apache/druid:0.20.0
+      container_name: druid_middlemanager
+      hostname: druid_middlemanager
+      volumes:
+      - $PWD/druid_storage:/opt/data
+      - $PWD/druid_vars:/opt/druid/var
+      - $PWD/druid_vars/tmp/druid:/opt/druid/var/druid
+      - $PWD/druid_vars/tmp/druid/segments:/opt/druid/var/druid/segments
+      - $PWD/druid_vars/tmp/druid/indexing-logs:/opt/druid/var/druid/indexing-logs
+      - $PWD/druid_vars/tmp/druid/task:/opt/druid/var/druid/task
+      - $PWD/druid_vars/tmp/druid/task/workerTaskManagerTmp:/opt/druid/var/druid/task/workerTaskManagerTmp
+      - $PWD/druid_vars/tmp/druid/task/assignedTasks:/opt/druid/var/druid/task/assignedTasks
+      - $PWD/druid_vars/tmp/druid/task/completedTasks:/opt/druid/var/druid/task/completedTasks
+      - $PWD/druid_vars/tmp/druid/hadoop-tmp:/opt/druid/var/druid/hadoop-tmp
+      - $PWD/druid_vars/tmp/druid/segment-cache:/opt/druid/var/druid/segment-cache
+      depends_on: 
+      - zookeeper
+      - druid_db
+      - druid_coordinator
+      networks:
+      - druid-network
+      ports:
+      - 8091:8091
+      command:
+      - middleManager
+      env_file:
+      - druid_environment_file
+    druid_router: 
+      image: apache/druid:0.20.0
+      container_name: druid_router
+      hostname: druid_router
+      volumes:
+      - $PWD/druid_vars:/opt/druid/var
+      - $PWD/druid_vars/tmp:/opt/druid/var/tmp
+      - $PWD/druid_vars/tmp/druid:/opt/druid/var/druid
+      - $PWD/druid_vars/tmp/druid/segments:/opt/druid/var/druid/segments
+      - $PWD/druid_vars/tmp/druid/indexing-logs:/opt/druid/var/druid/indexing-logs
+      - $PWD/druid_vars/tmp/druid/task:/opt/druid/var/druid/task
+      - $PWD/druid_vars/tmp/druid/hadoop-tmp:/opt/druid/var/druid/hadoop-tmp
+      - $PWD/druid_vars/tmp/druid/segment-cache:/opt/druid/var/druid/segment-cache
+      networks:
+      - druid-network
+      depends_on:
+      - zookeeper
+      - druid_db
+      - druid_coordinator
+      ports:
+      - 8888:8888
+      command:
+      - router
+      env_file:
+      - druid_environment_file
+networks:
+    druid-network:
+        driver: bridge

@@ -1,8 +1,5 @@
 #! /usr/bin/env bash
 
-# cd
-# git clone https://github.com/apache/druid/
+docker-compose -f stacks/druid/docker-compose.yml up
 
-cd ~/druid/distribution/docker
-
-docker-compose -f distribution/docker/docker-compose.yml up
+echo "runing druid console at http://localhost:8888/unified-console.html#"
