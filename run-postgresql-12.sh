@@ -7,7 +7,7 @@ CONTAINER_NAME=pgsql-12-metabase
 DB_NAME=metabase
 DB_USER=metabase
 DB_PASSWORD=Password1234
-HOST_PORT=${PSGQL_PORT:-5432}
+HOST_PORT=${PGSQL_PORT:-5432}
 DATA_DIR=${PGSQL_DATA_DIR:-$HOME/metabase-pgsql-data}
 DOCKER_NETWORK=psql-metabase-network
 
