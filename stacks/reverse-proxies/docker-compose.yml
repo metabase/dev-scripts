@@ -1,0 +1,55 @@
+version: '3.7'
+services:
+  metabase-reverse:
+    # image: metabase/metabase-enterprise:v1.37.8
+    image: metabase/metabase:v0.37.8
+    container_name: metabase-reverse
+    hostname: metabase-reverse
+    volumes: 
+    - /dev/urandom:/dev/random:ro
+    #ports:
+    #  - 3000:3000
+    networks: 
+      - metanet-private
+  haproxy:
+    image: haproxy:2.3.4-alpine
+    hostname: haproxy
+    container_name: haproxy
+    volumes: 
+      - $PWD/haproxy/config/:/usr/local/etc/haproxy/:ro
+      - $PWD/haproxy/log:/dev/log
+    networks:
+      - metanet-private
+      - metanet-public
+    ports:
+      - 8080:80
+    depends_on: 
+      - metabase-reverse
+  envoy:
+    image: envoyproxy/envoy-alpine:v1.17.0
+    hostname: envoy
+    volumes: 
+      - $PWD/envoy/config/envoy.yaml:/etc/envoy/envoy.yaml
+      - $PWD/envoy/logs:/var/log
+    container_name: envoy
+    networks:
+      - metanet-private
+      - metanet-public
+    ports:
+      - 8082:80
+  nginx:
+    image: nginx:1.19.6
+    hostname: nginx
+    container_name: nginx
+    volumes: 
+      - $PWD/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - metanet-private
+      - metanet-public
+    ports:
+      - 8081:80
+networks: 
+  metanet-private:
+    driver: bridge
+  metanet-public:
+    driver: bridge
