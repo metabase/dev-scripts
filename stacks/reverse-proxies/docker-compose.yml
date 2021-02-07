@@ -38,7 +38,7 @@ services:
     ports:
       - 8082:80
   nginx:
-    image: nginx:1.19.6
+    image: nginx:1.19.6-alpine
     hostname: nginx
     container_name: nginx
     volumes: 
