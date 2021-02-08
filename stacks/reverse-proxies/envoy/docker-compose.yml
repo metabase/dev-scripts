@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  metabase-reverse:
+    # image: metabase/metabase-enterprise:v1.37.8
+    image: metabase/metabase:v0.37.8
+    container_name: metabase-reverse
+    hostname: metabase-reverse
+    volumes: 
+    - /dev/urandom:/dev/random:ro
+    #ports:
+    #  - 3000:3000
+    networks: 
+      - metanet-private
+  envoy:
+    image: envoyproxy/envoy-alpine:v1.17.0
+    hostname: envoy
+    container_name: envoy
+    volumes: 
+      - $PWD/config/envoy.yaml:/etc/envoy/envoy.yaml
+      - $PWD/logs:/var/log
+    networks:
+      - metanet-private
+      - metanet-public
+    ports:
+      - 8082:80
+    depends_on: 
+      - metabase-reverse
+networks: 
+  metanet-private:
+    driver: bridge
+  metanet-public:
+    driver: bridge
