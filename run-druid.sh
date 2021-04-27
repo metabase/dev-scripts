@@ -1,8 +1,18 @@
 #! /usr/bin/env bash
 
-# cd
-# git clone https://github.com/apache/druid/
+SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
+source "$SOURCE_DIR/common.sh"
 
-cd ~/druid/distribution/docker
+kill-existing druid-0-17-0
 
-docker-compose -f distribution/docker/docker-compose.yml up
+docker run \
+       -p 8081:8081 \
+       -p 8082:8082 \
+       -p 8888:8888 \
+       --name druid-0-17-0 \
+       -- rm \
+       -d metabase/druid:0.17.0
+
+echo 'Started Druid on ports 8081, 8082, and 8888.'
+echo
+echo 'MB_DRUID_TEST_HOST=localhost MB_DRUID_TEST_PORT=8082'
