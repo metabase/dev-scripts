@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+set -euo pipefail
+
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 source "$SOURCE_DIR/common.sh"
 
@@ -8,6 +10,7 @@ kill-existing vertica_7_1_1
 docker run -p 5433:5433 \
        --name vertica_7_1_1 \
        --rm \
+       -v /tmp:/tmp \
        -d sumitchawla/vertica
 
 echo "Started Vertica 7.1.1 on port 5433."

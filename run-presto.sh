@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+set -euo pipefail
+
 echo "Removing existing container..."
 
 docker rm -fv presto 2>/dev/null || echo "Nothing to remove"
