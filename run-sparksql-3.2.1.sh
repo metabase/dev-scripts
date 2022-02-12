@@ -25,6 +25,6 @@ Note that dashes in test dataset names are replaced with underscores.
 
 No env vars are needed for running Metabase tests. Run the tests:
 
-DRIVERS=sparksql clojure-X:dev:ee:ee-dev:drivers:drivers-dev:test
+DRIVERS=sparksql clojure -X:dev:ee:ee-dev:drivers:drivers-dev:test
 
 EOF
