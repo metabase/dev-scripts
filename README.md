@@ -26,3 +26,7 @@ mysql --user=root --host=127.0.0.1 --port=3306 --database=metabase_test
 ```
 
 You need to have Docker installed to use these scripts!
+
+# Automated setup
+
+In stacks->setup-container you'll find a Compose file that has a Metabase container along with a setup container. The setup container waits till the Metabase container is ready (status:ok in the health endpoint) and then sets up a user (a@b as the user/ metabot1 as the password). You can tweak the script as much as you want.
