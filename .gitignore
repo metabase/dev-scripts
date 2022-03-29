@@ -1,2 +1,7 @@
 .\#
 *\#*\#
+.DS_Store
+run_postgres_ssl/*.pem
+run_postgres_ssl/*.crt
+run_postgres_ssl/*.key
+run_postgres_ssl/*.req
