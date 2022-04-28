@@ -30,3 +30,25 @@ You need to have Docker installed to use these scripts!
 # Automated setup
 
 In stacks->setup-container you'll find a Compose file that has a Metabase container along with a setup container. The setup container waits till the Metabase container is ready (status:ok in the health endpoint) and then sets up a user (a@b as the user/ metabot1 as the password). You can tweak the script as much as you want.
+
+# Metabase in HA (highly-available mode)
+
+This stack is to test how Metabase behaves in HA mode, so you'll have a configuration like the following:
+
+```
+--------------
+|   HAProxy  |
+--------------
+    |     |
+------  ------
+| MB |  | MB |
+------  ------
+    |    |
+--------------
+|  Postgres  |
+--------------
+```
+
+HAProxy is configured to balance requests in a round-robin manner and it checks the health of the application (so you can also simulate a failure)
+
+This will allow you to test how Metabase behaves when it scales horizontally, both on the FE (showing things like the process picker in the troubleshooting -> logs section) and on the backend (health checks, queues, settings, etc). All configs in the LB can be changed from the config in stacks/ha/config/haproxy.cfg
