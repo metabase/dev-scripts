@@ -15,7 +15,7 @@ test $(uname -s) = Linux && chown 70 server.key
 echo '--------------------------------------------------'
 echo 'To Connect, Run:'
 echo ''
-echo 'psql -p 5433 "sslmode=verify-full host=localhost dbname=postgres user=postgres"'
+echo 'psql -p 5433 "sslmode=verify-full host=localhost dbname=postgres user=postgres sslrootcert=server.crt"'
 echo ''
 echo '--------------------------------------------------'
 
