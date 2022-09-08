@@ -27,6 +27,13 @@ mysql --user=root --host=127.0.0.1 --port=3306 --database=metabase_test
 
 You need to have Docker installed to use these scripts!
 
+#### For Macbook with ARM chips
+Some drivers like oracle, vertical or sqlserver are currently not able to run on Apple M chips.
+The work around is using colima:
+1. [Install](https://github.com/abiosoft/colima#getting-started) colima
+2. Start it with `colima start --arch x86_64 --memory 4`
+3. Start the database with scripts like normal
+
 # Automated setup
 
 In stacks->setup-container you'll find a Compose file that has a Metabase container along with a setup container. The setup container waits till the Metabase container is ready (status:ok in the health endpoint) and then sets up a user (a@b as the user/ metabot1 as the password). You can tweak the script as much as you want.
