@@ -1,0 +1,50 @@
+{:min-bb-version "0.9.162"
+ :paths ["bb"]
+ :tasks {:requires [[bb.tasks :as tasks :refer [env]]
+                    [bb.cli :refer [menu!]]
+                    [bb.colors :as c]]
+
+         nrepl
+         {:requires ([babashka.fs :as fs]
+                     [babashka.nrepl.server :as srv])
+          :doc "Opens a babashka nrepl"
+          :task (do (srv/start-server! {:host "localhost" :port 8787})
+                    (spit ".nrepl-port" "8787")
+                    (-> (Runtime/getRuntime)
+                        (.addShutdownHook
+                          (Thread. (fn [] (fs/delete ".nrepl-port")))))
+                    (deref (promise)))}
+
+         download-and-run-branch
+         {:requires ([bb.dl-and-run :as dl])
+          :doc "Download and run a jar for a branch, and run it on a port"
+          :task (do (when-not (env "GH_PERSONAL_ACCESS")
+                      (c/red "Please put your github access token into GH_PERSONAL_ACCESS env var")
+                      (System/exit 1))
+                    (dl/download-and-run-latest-jar!
+                      (menu! (current-task)
+                             {:id :branch
+                              :title "What branch would you like to use?"
+                              :short "-b"
+                              :long "--branch BRANCH"
+                              :required? true
+                              :options (fn []
+                                         (dl/list-branches (let [mb-dir (env "MB_DIR")]
+                                                             (when-not mb-dir
+                                                               (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
+                                                               (c/white "export MB_DIR=path/to/metabase")
+                                                               (System/exit 1))
+                                                             mb-dir)))
+                              :prompt :autocomplete}
+                             {:id :port
+                              :title "What port would you like to run on?"
+                              :short "-p"
+                              :long "--port PORT"
+                              :required? true
+                              :prompt :numeral}
+                             {:id :socket-repl
+                              :title "Run metabase with a socket repl"
+                              :short "-s"
+                              :long "--socket-repl SOCKETPORT"
+                              :prompt :confirm
+                              :cli-only? true})))}}}
