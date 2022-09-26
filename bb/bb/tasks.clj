@@ -24,8 +24,9 @@
 
 (defn list-branches [mb-dir]
   (letfn [(remove-origin [b] (str/replace (str/trim b) (re-pattern "^origin/") ""))]
-    (println "Fetching metabase branches...")
-    (shell {:dir mb-dir :out :string} "git fetch")
+    (print "Fetching metabase branches...") (flush)
+    (with-out-str (shell {:dir mb-dir} "git fetch"))
+    (print "\r") (flush)
     (mapv remove-origin
           (str/split-lines
             (->> "git branch -r" (shell {:dir mb-dir :out :string}) :out)))))

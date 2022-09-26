@@ -31,14 +31,14 @@
    (clojure.core/print (->color f b string))
    (flush)))
 
-(defn black [& s]  (println :black :white (str/join s)))
-(defn red [& s]    (println :red :black (str/join s)))
-(defn green [& s]  (println :green :black (str/join s)))
-(defn yellow [& s] (println :yellow :black (str/join s)))
-(defn blue [& s]   (println :blue :black (str/join s)))
-(defn purple [& s] (println :purple :black (str/join s)))
-(defn cyan [& s]   (println :cyan :black (str/join s)))
-(defn white [& s]  (println :white :black (str/join s)))
+(defn black [& s]  (println :black :white (str/join " " s)))
+(defn red [& s]    (println :red :black (str/join " " s)))
+(defn green [& s]  (println :green :black (str/join " " s)))
+(defn yellow [& s] (println :yellow :black (str/join " " s)))
+(defn blue [& s]   (println :blue :black (str/join " " s)))
+(defn purple [& s] (println :purple :black (str/join " " s)))
+(defn cyan [& s]   (println :cyan :black (str/join " " s)))
+(defn white [& s]  (println :white :black (str/join " " s)))
 
 (defn sample []
   (doseq [bg (->> codes keys (filter (fn [k] (str/ends-with? (name k) "-bg"))) (remove #{:reset}) sort)

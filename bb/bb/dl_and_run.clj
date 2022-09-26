@@ -7,79 +7,78 @@
             [cheshire.core :as json]
             [clojure.edn :as edn]))
 
-(defn list-action-artifacts
-  ([] (list-action-artifacts 1))
-  ([page-num]
-   (-> (str "https://api.github.com/repos/metabase/metabase/actions/artifacts?per_page=100&page=" page-num)
-       (curl/get {:headers {"Accept" "application/vnd.github+json"
-                            "Authorization" (str "Bearer " (t/env "GH_PERSONAL_ACCESS"))}})
-       :body
-       (json/decode true)
-       :artifacts)))
+(defn- seek [f coll]
+  (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp))) coll))
 
-(def parallel-page-requests "How many requests to make for build artifacts per chunk"
-  30)
+(defn- gh-get [url]
+  (try (-> url
+           (curl/get {:headers {"Accept" "application/vnd.github+json"
+                                "Authorization" (str "Bearer " (t/env "GH_PERSONAL_ACCESS"))}})
+           :body
+           (json/decode true))
+       (catch Exception e (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
 
-(def last-page "The last page of build artifacts downloaded"
-  (atom 1))
-
-(def *branch->action-artifacts "branch -> all known action-artifacts"
-  (atom {}))
-
-(defn- get-latest-artifact [action-artifacts]
-  (first (sort-by :updated_at action-artifacts)))
-
-(defn- get-artifacts []
-  (when-not (t/env "GH_PERSONAL_ACCESS")
-    (c/red "Please put your github access token into GH_PERSONAL_ACCESS env var.")
-    (System/exit 1))
-  (let [last-page (swap! last-page + parallel-page-requests)
-        page-range [(- last-page parallel-page-requests) last-page]
-        ;; _ (println "getting artifacts for page-range: " page-range)
-        futures (map #(future (list-action-artifacts %)) (apply range page-range))
-        values (apply concat (map deref futures))
-        branch->action-artifacts (->> values
-                                      (group-by #(-> % :workflow_run :head_branch)))]
-    (swap! *branch->action-artifacts (fn [old] (merge-with (comp vec concat) old branch->action-artifacts)))))
+(defn branch->latest-artifact [branch]
+  (let [artifact-urls (-> (str "https://api.github.com/repos/metabase/metabase/actions/runs?branch=" branch)
+                          gh-get
+                          :workflow_runs
+                          ((fn [x] (mapv :artifacts_url x))))]
+    (or (seek
+          (fn [url]
+            (let [artifact (gh-get url)
+                  name->dl-url (->> artifact :artifacts (group-by :name) (into {}))]
+              (first (get name->dl-url "metabase-ee-uberjar"))))
+          artifact-urls)
+        (throw (ex-info (str "could not find an uberjar for branch " branch) {:branch branch})))))
 
 (defn download-mb-jar!
-  [path dl-path artifact-id]
-  (println "downloading from:"
-           (<< "https://api.github.com/repos/metabase/metabase/actions/artifacts/{{artifact-id}}/zip"))
+  [dl-path dl-url]
+  (c/green (str "downloading into " dl-path "/metabase.zip from: " dl-url))
   (shell {:dir dl-path} (str "curl"
                              " -H \"Accept:application/vnd.github+json\""
                              " -H \"Authorization:Bearer " (t/env "GH_PERSONAL_ACCESS") "\""
                              " -Lo metabase.zip"
-                             " https://api.github.com/repos/metabase/metabase/actions/artifacts/" artifact-id "/zip")))
+                             " " dl-url)))
 
 (def download-dir
   ;; artifact zips will be downloaded into download-dir/<BRANCH-NAME>/
   (or (t/env "LOCAL_MB_DL") "../"))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
+  (c/print :blue "Looking for latest version of ") (c/print :white branch) (c/println :blue "...")
   (let [{artifact-id :id
          created-at :created_at
-         :as info} (do (while (false? (get (get-artifacts) branch false))
-                         (get-artifacts)) ;; get-artifacts puts the new ones into *branch->action-artifacts.
-                       (get-latest-artifact (get @*branch->action-artifacts branch)))
+         dl-url :archive_download_url
+         :as info} (branch->latest-artifact branch)
         branch-dir (str download-dir branch)]
-    (println (<< "Found latest artifact, created-at: {{created-at}} id: {{artifact-id}}"))
+    (c/println :blue "Found latest artifact:")
+    (c/println :purple (str "           id: " artifact-id))
+    (c/println :purple (str "   created-at: " created-at))
+    (c/println :purple (str " download-url: " dl-url))
     (shell (str "mkdir -p " branch-dir))
     (if (= (try (edn/read-string (slurp (str branch-dir "/info.edn")))
                 (catch Throwable _ ::nothing-there))
            info)
-      (c/blue "Already downloaded branch.")
+      (c/yellow "Already downloaded artifact created at " created-at)
       (do
-        (c/blue "New version of branch found, downloading...")
-        (download-mb-jar! (str branch-dir "/metabase.zip") branch-dir artifact-id)))
+        (c/blue "New version found, downloading...")
+        (download-mb-jar! branch-dir dl-url)))
     (println "Artifact download complete.")
     (spit (str branch-dir "/info.edn") info)
     (println "Unzipping artifact...")
-    (shell {:dir branch-dir :out nil} "unzip -o metabase.zip")
+    (try
+      (shell {:dir branch-dir :out nil} "unzip -o metabase.zip")
+      (catch Exception e (throw (ex-info
+                                  "Problem unzipping... has the artifact expired?"
+                                  (merge {:zip-location (str branch-dir "/metabase.zip")
+                                          :zip-length (count (slurp (str branch-dir "/metabase.zip")))
+                                          :branch branch}
+                                         (if (< 10000 (count (slurp (str branch-dir "/metabase.zip"))))
+                                           {:zip-contents (slurp (str branch-dir "/metabase.zip"))}))))))
     (println "Artifact unzipped!")
     (shell {:dir branch-dir :out nil} (str "mv target/uberjar/metabase.jar ./metabase_" branch ".jar"))
     (println (<< "starting branch {{branch}} of metabase on port:{{port}}..."))
-    (future (do (while (not= 200 (:status (curl/get (str "localhost:" port)) {:throw false}))
+    (future (do (while (not= 200 (:status (curl/get (str "localhost:" port) {:throw false})))
                   (Thread/sleep 1000))
                 (shell (str "open http://localhost:" port))))
     (let [cmd (str "java "
