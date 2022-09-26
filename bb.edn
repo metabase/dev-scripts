@@ -29,12 +29,13 @@
                               :long "--branch BRANCH"
                               :required? true
                               :options (fn []
-                                         (dl/list-branches (let [mb-dir (env "MB_DIR")]
-                                                             (when-not mb-dir
-                                                               (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
-                                                               (c/white "export MB_DIR=path/to/metabase")
-                                                               (System/exit 1))
-                                                             mb-dir)))
+                                         (tasks/list-branches
+                                           (let [mb-dir (env "MB_DIR")]
+                                             (when-not mb-dir
+                                               (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
+                                               (c/white "export MB_DIR=path/to/metabase")
+                                               (System/exit 1))
+                                             mb-dir)))
                               :prompt :autocomplete}
                              {:id :port
                               :title "What port would you like to run on?"

@@ -2,6 +2,7 @@
   (:require [babashka.tasks :refer [shell]]
             [babashka.curl :as curl]
             [bb.colors :as c]
+            [bb.tasks :as t]
             [selmer.parser :refer [<<]]
             [cheshire.core :as json]
             [clojure.edn :as edn]))
@@ -11,7 +12,7 @@
   ([page-num]
    (-> (str "https://api.github.com/repos/metabase/metabase/actions/artifacts?per_page=100&page=" page-num)
        (curl/get {:headers {"Accept" "application/vnd.github+json"
-                            "Authorization" (str "Bearer " (env "GH_PERSONAL_ACCESS"))}})
+                            "Authorization" (str "Bearer " (t/env "GH_PERSONAL_ACCESS"))}})
        :body
        (json/decode true)
        :artifacts)))
@@ -29,7 +30,7 @@
   (first (sort-by :updated_at action-artifacts)))
 
 (defn- get-artifacts []
-  (when-not (env "GH_PERSONAL_ACCESS")
+  (when-not (t/env "GH_PERSONAL_ACCESS")
     (c/red "Please put your github access token into GH_PERSONAL_ACCESS env var.")
     (System/exit 1))
   (let [last-page (swap! last-page + parallel-page-requests)
@@ -47,13 +48,13 @@
            (<< "https://api.github.com/repos/metabase/metabase/actions/artifacts/{{artifact-id}}/zip"))
   (shell {:dir dl-path} (str "curl"
                              " -H \"Accept:application/vnd.github+json\""
-                             " -H \"Authorization:Bearer " (env "GH_PERSONAL_ACCESS") "\""
+                             " -H \"Authorization:Bearer " (t/env "GH_PERSONAL_ACCESS") "\""
                              " -Lo metabase.zip"
                              " https://api.github.com/repos/metabase/metabase/actions/artifacts/" artifact-id "/zip")))
 
 (def download-dir
   ;; artifact zips will be downloaded into download-dir/<BRANCH-NAME>/
-  (or (env "LOCAL_MB_DL") "../"))
+  (or (t/env "LOCAL_MB_DL") "../"))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
   (let [{artifact-id :id
