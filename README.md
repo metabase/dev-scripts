@@ -15,40 +15,43 @@ To see a list of avaliable tasks, run:
 
     bb tasks
     
-for help with a task, use `-h` or `--help` like so:
+for help with a task, use `-h` or `--help`.
 
-    bb metabuild --help
+    bb download-and-run-jar --help
     
 ``` shell
-  Starts metabase locally in dev mode.
+  Download and run a jar for a branch, and run it on a port
 
- -d --database DB
-┌────────────┬─────────────────────────────────────────────╖
-│ key        │ value                                       ║
-├────────────┼─────────────────────────────────────────────╢
-│ :id        │ :app-db                                     ║
-│ :title     │ Which application DB would you like to use? ║
-│ :options   │ ["postgres" "h2" "mysql"]                   ║
-│ :required? │ true                                        ║
-│ :prompt    │ :autocomplete                               ║
-╘════════════╧═════════════════════════════════════════════╝
+ -b --branch BRANCH
+┌────────────┬─────────────────────────────────────────╖
+│ key        │ value                                   ║
+├────────────┼─────────────────────────────────────────╢
+│ :id        │ :branch                                 ║
+│ :title     │ What branch would you like to use?      ║
+│ :required? │ true                                    ║
+│ :options   │ sci.impl.fns$fun$arity_0__3527@2471695a ║
+│ :prompt    │ :autocomplete                           ║
+╘════════════╧═════════════════════════════════════════╝
 
- -u --username USER
-┌──────────┬────────────╖
-│ key      │ value      ║
-├──────────┼────────────╢
-│ :id      │ :user-name ║
-│ :prompt  │ :input     ║
-│ :default │ $whoami    ║
-╘══════════╧════════════╝
+ -p --port PORT
+┌────────────┬─────────────────────────────────────╖
+│ key        │ value                               ║
+├────────────┼─────────────────────────────────────╢
+│ :id        │ :port                               ║
+│ :title     │ What port would you like to run on? ║
+│ :required? │ true                                ║
+│ :prompt    │ :numeral                            ║
+╘════════════╧═════════════════════════════════════╝
 
- -p --pw PW
-┌──────────┬───────────╖
-│ key      │ value     ║
-├──────────┼───────────╢
-│ :id      │ :password ║
-│ :default │ password  ║
-╘══════════╧═══════════╝
+ -s --socket-repl SOCKETPORT
+┌────────────┬─────────────────────────────────╖
+│ key        │ value                           ║
+├────────────┼─────────────────────────────────╢
+│ :id        │ :socket-repl                    ║
+│ :title     │ Run metabase with a socket repl ║
+│ :prompt    │ :confirm                        ║
+│ :cli-only? │ true                            ║
+╘════════════╧═════════════════════════════════╝
 ```
 
 
