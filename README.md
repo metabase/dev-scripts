@@ -4,6 +4,54 @@ of anything good.
 
 Please feel free to collaborate and improve these scripts or add new ones!
 
+### bb tasks
+
+To get setup you'll need:
+
+- *babashka* `brew install borkdude/brew/babashka`
+- *npm* `brew install npm`
+
+To see a list of avaliable tasks, run:
+
+    bb tasks
+    
+for help with a task, use `-h` or `--help` like so:
+
+    bb metabuild --help
+    
+``` shell
+  Starts metabase locally in dev mode.
+
+ -d --database DB
+┌────────────┬─────────────────────────────────────────────╖
+│ key        │ value                                       ║
+├────────────┼─────────────────────────────────────────────╢
+│ :id        │ :app-db                                     ║
+│ :title     │ Which application DB would you like to use? ║
+│ :options   │ ["postgres" "h2" "mysql"]                   ║
+│ :required? │ true                                        ║
+│ :prompt    │ :autocomplete                               ║
+╘════════════╧═════════════════════════════════════════════╝
+
+ -u --username USER
+┌──────────┬────────────╖
+│ key      │ value      ║
+├──────────┼────────────╢
+│ :id      │ :user-name ║
+│ :prompt  │ :input     ║
+│ :default │ $whoami    ║
+╘══════════╧════════════╝
+
+ -p --pw PW
+┌──────────┬───────────╖
+│ key      │ value     ║
+├──────────┼───────────╢
+│ :id      │ :password ║
+│ :default │ password  ║
+╘══════════╧═══════════╝
+```
+
+
 ### Database Scripts
 
 These scripts run the same Docker images with the same env vars we use in CI and then dump out some useful info for

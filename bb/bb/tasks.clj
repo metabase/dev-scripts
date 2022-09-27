@@ -1,5 +1,6 @@
 (ns bb.tasks
   (:require [babashka.fs :as fs]
+            [bb.colors :as c]
             [babashka.tasks :refer [shell]]
             [clojure.string :as str]
             [selmer.parser :refer [<<]]
@@ -34,5 +35,20 @@
 
 (defn env
   ([] (into {} (System/getenv)))
-  ([var] (get (env) (name var))))
+  ([var] (env var (fn [_])))
+  ([var error-fn] (or ((env) (name var)) (error-fn var))))
 
+(defn whoami [] (str/trim (:out (shell {:out :string} "whoami"))))
+
+(defn print-env
+  ([] (print-env "" (env)))
+  ([match] (print-env match (env)))
+  ([match env]
+   (let [important-env (->> env
+                            (filter (fn [[k _]] (re-find (re-pattern (str "(?i).*" match ".*")) k)))
+                            (sort-by first))
+         key-print-width (inc (apply max (mapv (comp count first) important-env)))
+         spaces (fn [setting] (str (apply str (repeat (- key-print-width (count setting)) " ")) setting))]
+     (println)
+     (doseq [[setting value] important-env]
+       (c/print :yellow (spaces setting)) (c/print :white " : ") (c/println :cyan value)))))

@@ -43,7 +43,9 @@
                               (:cli-only? %)
                               (answered-ids (:id %))) all-options)
         to-ask (mapv ->ask unanswered)]
-    (merge cli-options (tasks/ask! to-ask))))
+    (if (empty? to-ask)
+      cli-options
+      (merge cli-options (tasks/ask! to-ask)))))
 
 (defn- menu-cli
   "Gets required cli options through a menu when not provided by users."

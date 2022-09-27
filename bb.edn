@@ -1,6 +1,6 @@
 {:min-bb-version "0.9.162"
  :paths ["bb"]
- :tasks {:requires [[bb.tasks :as tasks :refer [env]]
+ :tasks {:requires [[bb.tasks :as tasks]
                     [bb.cli :refer [menu!]]
                     [bb.colors :as c]]
 
@@ -15,12 +15,39 @@
                           (Thread. (fn [] (fs/delete ".nrepl-port")))))
                     (deref (promise)))}
 
+         metabuild
+         {:doc "Starts metabase locally in dev mode."
+          :task (let [{:keys [app-db user-name password] :as p}
+                      (menu! (current-task)
+                             {:id :app-db, :title "Which application DB would you like to use?",
+                              :options ["postgres" "h2" "mysql"] :required? true,
+                              :short "-d", :long "--database DB", :prompt :autocomplete}
+                             {:id :user-name, :prompt :input, :short "-u", :long "--username USER", :default (tasks/whoami)}
+                             {:id :password, :short "-p", :long "--pw PW", :default "password"})
+                      app-db->conn-uri {"postgres" (str "postgres://" user-name ":" password "@localhost:5432/metabase")
+                                        "mysql" (str "mysql://" user-name ":" password "@localhost:3306/metabase")
+                                        "h2" ""}
+                      env+ (assoc (tasks/env) "MB_DB_CONNECTION_URI" (app-db->conn-uri app-db))
+                      cmd "clj -M:dev:ee:ee-dev:drivers:drivers-dev:cider/nrepl:escherize/tools:djblue/portal"]
+                  (println (:out (shell {:out :string} "java -version")))
+                  (tasks/print-env "mb" env+)
+                  (c/green "\n--- Starting metabase with: -----\n")
+                  (c/green cmd)
+                  (c/green "\n---------------------------------\n")
+                  (when (not= (tasks/env "MB_DIR") (:out (deref (shell {:out :string} "pwd"))))
+                    (c/purple "In directory: " (tasks/env "MB_DIR")))
+                  (shell {:extra-env env+ :dir (tasks/env "MB_DIR")} cmd))}
+
          download-and-run-branch
          {:requires ([bb.dl-and-run :as dl])
           :doc "Download and run a jar for a branch, and run it on a port"
-          :task (do (when-not (env "GH_PERSONAL_ACCESS")
-                      (c/red "Please put your github access token into GH_PERSONAL_ACCESS env var")
-                      (System/exit 1))
+          :task (do (tasks/env "GH_TOKEN" (fn [v]
+                                            (c/red "No" v "set!")
+                                            (c/white "This API is available for authenticated users, OAuth Apps, and GitHub Apps.")
+                                            (c/print :white "Access tokens require ") (c/print :red "repo scope") (c/print :white " for private repositories and ")
+                                            (c/print :red "public_repo scope")  (c/println :white " for public repositories.")
+                                            (c/white "More info at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token")
+                                            (System/exit 1)))
                     (dl/download-and-run-latest-jar!
                       (menu! (current-task)
                              {:id :branch
@@ -30,12 +57,10 @@
                               :required? true
                               :options (fn []
                                          (tasks/list-branches
-                                           (let [mb-dir (env "MB_DIR")]
-                                             (when-not mb-dir
-                                               (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
-                                               (c/white "export MB_DIR=path/to/metabase")
-                                               (System/exit 1))
-                                             mb-dir)))
+                                           (tasks/env "MB_DIR" (fn [v]
+                                                                 (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
+                                                                 (c/white "export" (str v "=path/to/metabase"))
+                                                                 (System/exit 1)))))
                               :prompt :autocomplete}
                              {:id :port
                               :title "What port would you like to run on?"
