@@ -13,6 +13,7 @@
       (println (<< "{{program}} should be installed now. Thanks!")))))
 
 (defn ask! [qs]
+  (install-or-noop "npm" (fn [] (c/red "Please install npm.") (System/exit 1)))
   (install-or-noop "fullfill" (fn [] (shell "npm install -g fullfill")))
   (let [seed (apply str (repeatedly 10 (fn [] (rand-nth "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))))
         asker-result-file (str ".out_" seed ".edn")
@@ -25,7 +26,7 @@
 (defn list-branches [mb-dir]
   (letfn [(remove-origin [b] (str/replace (str/trim b) (re-pattern "^origin/") ""))]
     (print "Fetching metabase branches...") (flush)
-    (with-out-str (shell {:dir mb-dir} "git fetch"))
+    (with-out-str (shell {:dir mb-dir :out :string} "git fetch"))
     (print "\r") (flush)
     (mapv remove-origin
           (str/split-lines
