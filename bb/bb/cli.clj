@@ -1,15 +1,15 @@
 (ns bb.cli
   (:require [babashka.deps :as deps]
             [clojure.tools.cli :refer [parse-opts]]
-            [bb.colors :as c]
-            [bb.tasks :as tasks]))
+            [clojure.term.colors :as c]
+            [bask.bask :as b]))
 
 (deps/add-deps '{:deps {table/table {:mvn/version "0.5.0"}}})
 (require '[table.core :as t])
-(defn tbl [x] (t/table x :fields [:short :long :title :required? :default :options :id] :style :unicode-3d))
+(defn tbl [x] (t/table x :fields [:short :long :msg :required? :default :options :id] :style :unicode-3d))
 
-(defn- ->cli-tools-option [{:keys [title short long id default parse-fn update-fn validate] :as hybrid-opt}]
-  (vec (concat [short long title]
+(defn- ->cli-tools-option [{:keys [msg short long id default parse-fn update-fn validate] :as opt}]
+  (vec (concat [short long msg]
                (when id [:id id])
                (when default [:default default])
                (when parse-fn [:parse-fn parse-fn])
@@ -19,33 +19,29 @@
 (defn- check-print-help [args current-task options]
   (when (or (get (set args) "-h")
             (get (set args) "--help"))
-    (c/green (str "  " (:doc current-task)))
+    (println (c/green (str "  " (:doc current-task))))
     (if (seq options)
-      (do (println "")
-          (doseq [opt options] (println "") (c/cyan (str " " (:short opt) " " (:long opt))) (tbl (dissoc opt :short :long)))
+      (do (doseq [opt options] (println) (println (c/cyan (str " " (:short opt) " " (:long opt) " " (:msg opt)))) (tbl (dissoc opt :short :long :msg)))
           (when-let [examples (:examples current-task)]
-            (c/white "\n#### Examples:")
+            (println (c/white "\n#### Examples:"))
             (doseq [[cmd effect] examples]
-              (c/white cmd) (println (str "  - " effect)))))
-      (c/cyan " accepts no command line arguments."))
+              (println (c/white cmd) " -" effect))))
+      (println (c/cyan " accepts no command line arguments.")))
     (System/exit 0)))
 
-(defn ->ask [{:keys [prompt id options title] :as option}]
-  {:name id
-   :type (or prompt :input)
-   :limit 10
-   :message title
-   :choices (if (fn? options) (options) options)})
+(defn ->ask [{:keys [id msg prompt choices] :as _option}]
+  {:id id
+   :msg msg
+   :type prompt
+   :choices (if (delay? choices) @choices choices)})
 
 (defn ask-unknown! [cli-options all-options]
   (let [answered-ids (set (keys cli-options))
-        unanswered (remove #(or
-                              (:cli-only? %)
-                              (answered-ids (:id %))) all-options)
+        unanswered (remove #(or (nil? (:prompt %)) (answered-ids (:id %))) all-options)
         to-ask (mapv ->ask unanswered)]
     (if (empty? to-ask)
       cli-options
-      (merge cli-options (tasks/ask! to-ask)))))
+      (merge cli-options (apply b/ask! to-ask)))))
 
 (defn- menu-cli
   "Gets required cli options through a menu when not provided by users."
@@ -55,14 +51,14 @@
         {:keys [error summary arguments] parsed-opts :options} (try (parse-opts args options)
                                                                     (catch Throwable t {:error "parse-opts threw."}))
         _ (when error (println "WARNING:" "args, " args  "options," options " | " error "|" summary))
-        required-hopts (filter :required? options)
-        missing-opts (remove (fn [rho] (contains? parsed-opts (:id rho))) required-hopts)
+        required-opts (filter :required? options)
+        missing-opts (remove (fn [req-opt] (contains? parsed-opts (:id req-opt))) required-opts)
         missing-and-unaskable (remove (fn [rho] (-> rho :options seq)) missing-opts)
+        missing-and-askable (filter (fn [rho] (-> rho :options seq)) missing-opts)
         _ (when (seq missing-and-unaskable)
-            (c/red "Missing required option(s) without a menu-selectable value!")
+            (println (c/red "Missing required option(s) without a menu-selectable value!"))
             (tbl options)
             (System/exit 1))
-        missing-and-askable (filter (fn [rho] (-> rho :options seq)) missing-opts)
         asked-opts (into {} (for [hybrid-option missing-and-askable]
                               (println "todo: ask (menu-ask hybrid-option)" (pr-str hybrid-option))))
         cli (assoc (merge parsed-opts asked-opts) :args arguments)]
@@ -73,25 +69,21 @@
 
   Custom keys are:
 
-  :prompt <:autocomplete|:input|:numeral|:confirm|:multiselect|:password|:toggle>
-  defaults to input in [[->ask]], the type of prompt to use to ask the user to
-  fill out the option.
-
-  :cli-only? <true|false>
-  this option will not be asked about in the interavtive menu.
-
+  :prompt one of :text :number :select :multi
+  When missing a :prompt key, we will not ask this quesion on the cli menu.
+  So if it is required, it must be passed via cli flags.
 
   n.b.
 
   one handy trick is to add a bb task like
 
   x (prn (menu! (current-task)
-         {:id :my-arg
+         {:id :fav-foods
           :short \"-p\"
           :long \"--port PORT\"
           :required? true
-          :prompt :multiselect
-          :options [\"apple\" \"banana\" \"egg salad\" \"green onions\" \"mango\"]}))
+          :prompt :multi
+          :choices [\"apple\" \"banana\" \"egg salad\" \"green onions\" \"mango\"]}))
 
   and call it via running `bb x` in your terminal
   "

@@ -9,12 +9,14 @@ Please feel free to collaborate and improve these scripts or add new ones!
 To get setup you'll need:
 
 - *babashka* `brew install borkdude/brew/babashka`
-- *npm* `brew install npm`
+- *fzf* `brew install fzf`
 
 To see a list of avaliable tasks, run:
 
     bb tasks
-    
+
+#### How to get help
+
 for help with a task, use `-h` or `--help`.
 
     bb download-and-run-jar --help
@@ -30,7 +32,7 @@ for help with a task, use `-h` or `--help`.
 │ :title     │ What branch would you like to use?      ║
 │ :required? │ true                                    ║
 │ :options   │ sci.impl.fns$fun$arity_0__3527@2471695a ║
-│ :prompt    │ :autocomplete                           ║
+│ :prompt    │ :select                                 ║
 ╘════════════╧═════════════════════════════════════════╝
 
  -p --port PORT
@@ -40,7 +42,7 @@ for help with a task, use `-h` or `--help`.
 │ :id        │ :port                               ║
 │ :title     │ What port would you like to run on? ║
 │ :required? │ true                                ║
-│ :prompt    │ :numeral                            ║
+│ :prompt    │ :number                             ║
 ╘════════════╧═════════════════════════════════════╝
 
  -s --socket-repl SOCKETPORT
@@ -49,11 +51,10 @@ for help with a task, use `-h` or `--help`.
 ├────────────┼─────────────────────────────────╢
 │ :id        │ :socket-repl                    ║
 │ :title     │ Run metabase with a socket repl ║
-│ :prompt    │ :confirm                        ║
-│ :cli-only? │ true                            ║
+│ :prompt    │ :select                         ║
+│ :choices   │ [true false]                    ║
 ╘════════════╧═════════════════════════════════╝
 ```
-
 
 ### Database Scripts
 

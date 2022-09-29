@@ -1,7 +1,7 @@
 (ns bb.dl-and-run
   (:require [babashka.tasks :refer [shell]]
             [babashka.curl :as curl]
-            [bb.colors :as c]
+            [clojure.term.colors :as c]
             [bb.tasks :as t]
             [selmer.parser :refer [<<]]
             [cheshire.core :as json]
@@ -13,7 +13,7 @@
 (defn- gh-get [url]
   (try (-> url
            (curl/get {:headers {"Accept" "application/vnd.github+json"
-                                "Authorization" (str "Bearer " (t/env "GH_PERSONAL_ACCESS"))}})
+                                "Authorization" (str "Bearer " (t/env "GH_TOKEN"))}})
            :body
            (json/decode true))
        (catch Exception e (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
@@ -33,10 +33,10 @@
 
 (defn download-mb-jar!
   [dl-path dl-url]
-  (c/green (str "downloading into " dl-path "/metabase.zip from: " dl-url))
+  (println (c/green (str "downloading into " dl-path "/metabase.zip from: " dl-url)))
   (shell {:dir dl-path} (str "curl"
                              " -H \"Accept:application/vnd.github+json\""
-                             " -H \"Authorization:Bearer " (t/env "GH_PERSONAL_ACCESS") "\""
+                             " -H \"Authorization:Bearer " (t/env "GH_TOKEN") "\""
                              " -Lo metabase.zip"
                              " " dl-url)))
 
@@ -45,23 +45,23 @@
   (or (t/env "LOCAL_MB_DL") "../"))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
-  (c/print :blue "Looking for latest version of ") (c/print :white branch) (c/println :blue "...")
+  (println (c/cyan "Looking for latest version of") (c/white branch) (c/cyan "..."))
   (let [{artifact-id :id
          created-at :created_at
          dl-url :archive_download_url
          :as info} (branch->latest-artifact branch)
         branch-dir (str download-dir branch)]
-    (c/println :blue "Found latest artifact:")
-    (c/println :purple (str "           id: " artifact-id))
-    (c/println :purple (str "   created-at: " created-at))
-    (c/println :purple (str " download-url: " dl-url))
+    (println (c/cyan "Found latest artifact!"))
+    (println (c/magenta (str "           id: " artifact-id)))
+    (println (c/magenta (str "   created-at: " created-at)))
+    (println (c/magenta (str " download-url: " dl-url)))
     (shell (str "mkdir -p " branch-dir))
     (if (= (try (edn/read-string (slurp (str branch-dir "/info.edn")))
                 (catch Throwable _ ::nothing-there))
            info)
-      (c/yellow "Already downloaded artifact created at " created-at)
+      (println (c/yellow "Already downloaded artifact created at " created-at))
       (do
-        (c/blue "New version found, downloading...")
+        (println (c/cyan "New version found, downloading..."))
         (download-mb-jar! branch-dir dl-url)))
     (println "Artifact download complete.")
     (spit (str branch-dir "/info.edn") info)
@@ -84,7 +84,7 @@
     (let [cmd (str "java "
                    (when socket-repl (str "-Dclojure.server.repl=\"{:port " socket-repl " :accept clojure.core.server/repl}\" "))
                    "-jar " "metabase_" branch ".jar")]
-      (c/print :white "Running: ") (c/println :green cmd)
+      (println (c/white "Running: ") (c/green cmd))
       (shell {:dir branch-dir
               :out :inherit
               :env {"MB_JETTY_PORT" port}} cmd))))
