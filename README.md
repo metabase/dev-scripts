@@ -4,6 +4,58 @@ of anything good.
 
 Please feel free to collaborate and improve these scripts or add new ones!
 
+### bb tasks
+
+To get setup you'll need:
+
+- *babashka* `brew install borkdude/brew/babashka`
+- *fzf* `brew install fzf`
+
+To see a list of avaliable tasks, run:
+
+    bb tasks
+
+#### How to get help
+
+for help with a task, use `-h` or `--help`.
+
+    bb download-and-run-jar --help
+    
+``` shell
+  Download and run a jar for a branch, and run it on a port
+
+ -b --branch BRANCH
+┌────────────┬─────────────────────────────────────────╖
+│ key        │ value                                   ║
+├────────────┼─────────────────────────────────────────╢
+│ :id        │ :branch                                 ║
+│ :title     │ What branch would you like to use?      ║
+│ :required? │ true                                    ║
+│ :options   │ sci.impl.fns$fun$arity_0__3527@2471695a ║
+│ :prompt    │ :select                                 ║
+╘════════════╧═════════════════════════════════════════╝
+
+ -p --port PORT
+┌────────────┬─────────────────────────────────────╖
+│ key        │ value                               ║
+├────────────┼─────────────────────────────────────╢
+│ :id        │ :port                               ║
+│ :title     │ What port would you like to run on? ║
+│ :required? │ true                                ║
+│ :prompt    │ :number                             ║
+╘════════════╧═════════════════════════════════════╝
+
+ -s --socket-repl SOCKETPORT
+┌────────────┬─────────────────────────────────╖
+│ key        │ value                           ║
+├────────────┼─────────────────────────────────╢
+│ :id        │ :socket-repl                    ║
+│ :title     │ Run metabase with a socket repl ║
+│ :prompt    │ :select                         ║
+│ :choices   │ [true false]                    ║
+╘════════════╧═════════════════════════════════╝
+```
+
 ### Database Scripts
 
 These scripts run the same Docker images with the same env vars we use in CI and then dump out some useful info for
