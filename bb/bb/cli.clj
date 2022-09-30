@@ -41,7 +41,7 @@
         to-ask (mapv ->ask unanswered)]
     (if (empty? to-ask)
       cli-options
-      (merge cli-options (apply b/ask! to-ask)))))
+      (merge cli-options (b/ask! to-ask)))))
 
 (defn- menu-cli
   "Gets required cli options through a menu when not provided by users."

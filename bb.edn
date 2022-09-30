@@ -75,8 +75,6 @@
                   (println (c/green "\n---------------------------------\n"))
                   (when (not= (tasks/env "MB_DIR") (:out (deref (shell {:out :string} "pwd"))))
                     (c/magenta "In directory: " (tasks/env "MB_DIR")))
-                  (shell {:extra-env env+ :dir (tasks/env "MB_DIR")} cmd))}
-
-}
+                  (shell {:extra-env env+ :dir (tasks/env "MB_DIR")} cmd))}}
  :deps {escherize/bask {:git/url "https://github.com/escherize/bask.git"
-                        :git/sha "d756759d5bed847d32fd82ed7a913d4a1f17f0b9"}}}
+                        :git/sha "407dbad68f70c45165322c54c896fea844da2a75"}}}
