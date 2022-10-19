@@ -1,10 +1,10 @@
 {:min-bb-version "0.9.162"
  :paths ["bb"]
  :deps {escherize/bask {:git/url "https://github.com/escherize/bask.git"
-                        :git/sha "407dbad68f70c45165322c54c896fea844da2a75"}}
+                        :git/sha "adfde5d60a2136d0b6b127cb6ecb41cb49c982c2"}}
  :tasks {:requires [[bb.cli :as cli]
                     [bb.tasks :as t]
-                    [clojure.term.colors :as c]]
+                    [bask.colors :as c]]
          run-branch
          {:requires [[bb.dl-and-run :as dl]]
           :doc "Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI."

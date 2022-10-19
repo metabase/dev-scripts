@@ -1,7 +1,7 @@
 (ns bb.cli
   (:require [babashka.deps :as deps]
             [clojure.tools.cli :refer [parse-opts]]
-            [clojure.term.colors :as c]
+            [bask.colors :as c]
             [bask.bask :as b]))
 
 (deps/add-deps '{:deps {table/table {:mvn/version "0.5.0"}}})

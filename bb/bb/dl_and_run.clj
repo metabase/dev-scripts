@@ -1,7 +1,7 @@
 (ns bb.dl-and-run
   (:require [babashka.tasks :refer [shell]]
             [babashka.curl :as curl]
-            [clojure.term.colors :as c]
+            [bask.colors :as c]
             [bb.tasks :as t]
             [selmer.parser :refer [<<]]
             [cheshire.core :as json]

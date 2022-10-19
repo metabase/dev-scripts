@@ -1,5 +1,5 @@
 (ns bb.tasks
-  (:require [clojure.term.colors :as c]
+  (:require [bask.colors :as c]
             [babashka.tasks :refer [shell]]
             [clojure.string :as str]
             [selmer.parser :refer [<<]]))
