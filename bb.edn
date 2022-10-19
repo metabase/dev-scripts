@@ -1,80 +1,34 @@
 {:min-bb-version "0.9.162"
  :paths ["bb"]
- :tasks {:requires [[bb.tasks :as tasks]
-                    [bb.cli :refer [menu!]]
+ :deps {escherize/bask {:git/url "https://github.com/escherize/bask.git"
+                        :git/sha "407dbad68f70c45165322c54c896fea844da2a75"}}
+ :tasks {:requires [[bb.cli :as cli]
+                    [bb.tasks :as t]
                     [clojure.term.colors :as c]]
-
-         nrepl
-         {:requires [[babashka.fs :as fs]
-                     [babashka.nrepl.server :as srv]]
-          :doc "Opens a babashka nrepl"
-          :task (do (srv/start-server! {:host "localhost" :port 8787})
-                    (spit ".nrepl-port" "8787")
-                    (-> (Runtime/getRuntime)
-                        (.addShutdownHook
-                          (Thread. (fn [] (fs/delete ".nrepl-port")))))
-                    (deref (promise)))}
-
-         download-and-run-branch
+         run-branch
          {:requires [[bb.dl-and-run :as dl]]
-          :doc "Download and run a jar for a branch, on a port.\nThis respects MB_DB_CONNECTION_URI, and does not set up any backing services."
-          :task (do (tasks/env "GH_TOKEN" (fn [v]
-                                            (println  "Please set " (c/green v) ".")
-                                            (println (c/white "This API is available for authenticated users, OAuth Apps, and GitHub Apps."))
-                                            (println (c/white "Access tokens require") (c/cyan "repo scope") (c/white "for private repositories and")
-                                                     (c/cyan "public_repo scope")  (c/white "for public repositories."))
-                                            (println "More info at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token")
-                                            (System/exit 1)))
-                    (dl/download-and-run-latest-jar!
-                      (menu! (current-task)
+          :doc "Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI."
+          :task (dl/download-and-run-latest-jar!
+                  (cli/menu! (current-task)
                              {:id :branch
-                              :title "What branch would you like to use?"
+                              :msg "What branch should we run?"
                               :short "-b"
                               :long "--branch BRANCH"
                               :required? true
-                              :choices (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
-                                         (tasks/list-branches
-                                           (tasks/env "MB_DIR" (fn [v]
-                                                                 (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
-                                                                 (c/white "export" (str v "=path/to/metabase"))
-                                                                 (System/exit 1)))))
+                              :choices (delay ;; there is no need to compute choices if a branch is passed in e.g.: 'bb run-branch -b some_branch_name'
+                                         (t/list-branches
+                                           (t/env "MB_DIR" (fn [v]
+                                                             (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
+                                                             (c/white "export" (str v "=path/to/metabase"))
+                                                             (System/exit 1)))))
                               :prompt :select}
                              {:id :port
-                              :title "What port would you like to run on?"
+                              :msg "What port should we run it on?"
                               :short "-p"
                               :long "--port PORT"
                               :required? true
                               :prompt :number}
                              {:id :socket-repl
-                              :title "Run metabase with a socket repl"
+                              :msg "What port shall we open a socket repl on?"
                               :short "-s"
-                              :long "--socket-repl SOCKETPORT"})))}
-
-         metabuild
-         {:doc "Starts metabase locally in dev mode."
-          :task (let [{:keys [app-db user-name password] :as p}
-                      (menu! (current-task)
-                             {:id :app-db,
-                              :title "Which application DB would you like to use?",
-                              :choices ["postgres" "h2" "mysql"]
-                              :required? true,
-                              :short "-d",
-                              :long "--database DB",
-                              :prompt :select}
-                             {:id :user-name, :short "-u", :long "--username USER", :default (tasks/whoami)}
-                             {:id :password, :short "-p", :long "--pw PW", :default "password"})
-                      app-db->conn-uri {"postgres" (str "postgres://" user-name ":" password "@localhost:5432/metabase")
-                                        "mysql" (str "mysql://" user-name ":" password "@localhost:3306/metabase")
-                                        "h2" ""}
-                      env+ (assoc (tasks/env) "MB_DB_CONNECTION_URI" (app-db->conn-uri app-db))
-                      cmd "clj -M:dev:ee:ee-dev:drivers:drivers-dev:cider/nrepl:escherize/tools:djblue/portal"]
-                  (println (:out (shell {:out :string} "java -version")))
-                  (tasks/print-env "mb" env+)
-                  (println (c/green "\n--- Starting metabase with: -----\n"))
-                  (println (c/green cmd))
-                  (println (c/green "\n---------------------------------\n"))
-                  (when (not= (tasks/env "MB_DIR") (:out (deref (shell {:out :string} "pwd"))))
-                    (c/magenta "In directory: " (tasks/env "MB_DIR")))
-                  (shell {:extra-env env+ :dir (tasks/env "MB_DIR")} cmd))}}
- :deps {escherize/bask {:git/url "https://github.com/escherize/bask.git"
-                        :git/sha "407dbad68f70c45165322c54c896fea844da2a75"}}}
+                              :long "--socket-repl SOCKETPORT"}))}}}

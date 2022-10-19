@@ -1,10 +1,8 @@
 (ns bb.tasks
-  (:require [babashka.fs :as fs]
-            [clojure.term.colors :as c]
+  (:require [clojure.term.colors :as c]
             [babashka.tasks :refer [shell]]
             [clojure.string :as str]
-            [selmer.parser :refer [<<]]
-            [clojure.edn :as edn]))
+            [selmer.parser :refer [<<]]))
 
 (defn install-or-noop [program install-fn]
   (letfn [(can-run? [program] (= 0 (:exit (shell {:out nil} (str "command -v " program)))))]
@@ -13,21 +11,35 @@
       (install-fn)
       (println (<< "{{program}} should be installed now. Thanks!")))))
 
+(defn- wait
+  "Print message, followed by .'s until @*continue? is false."
+  [message]
+  (let [*continue? (atom true)]
+    (future
+      (print (str message ": ")) (flush)
+      (while @*continue?
+        (print "|") (flush)
+        (Thread/sleep 1000)))
+    *continue?))
+
+(defn- git-fetch [mb-dir]
+  (let [*wait (wait "Fetching metabase branches")]
+    (shell {:dir mb-dir :out :string :err :string} "git fetch")
+    (reset! *wait false)))
+
 (defn list-branches [mb-dir]
+  (git-fetch mb-dir)
   (letfn [(remove-origin [b] (str/replace (str/trim b) (re-pattern "^origin/") ""))]
-    (print "Fetching metabase branches...") (flush)
-    (with-out-str (shell {:dir mb-dir :out :string} "git fetch"))
-    (print "\r") (flush)
     (mapv remove-origin
           (str/split-lines
             (->> "git branch -r" (shell {:dir mb-dir :out :string}) :out)))))
 
+(defn whoami [] (str/trim (:out (shell {:out :string} "whoami"))))
+
 (defn env
   ([] (into {} (System/getenv)))
-  ([var] (env var (fn [_])))
+  ([var] (env var (fn [_var] (println "Warning: cannot find " (c/red var) " in env."))))
   ([var error-fn] (or ((env) (name var)) (error-fn var))))
-
-(defn whoami [] (str/trim (:out (shell {:out :string} "whoami"))))
 
 (defn print-env
   ([] (print-env "" (env)))

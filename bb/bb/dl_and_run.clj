@@ -42,9 +42,20 @@
 
 (def download-dir
   ;; artifact zips will be downloaded into download-dir/<BRANCH-NAME>/
-  (or (t/env "LOCAL_MB_DL") "../"))
+  (or (t/env "LOCAL_MB_DL" (fn [_]))
+      "../"))
+
+(defn- check-gh-token []
+  (t/env "GH_TOKEN"
+         (fn [token]
+           (println  "Please set " (c/green token) ".")
+           (println (c/white "This API is available for authenticated users, OAuth Apps, and GitHub Apps."))
+           (println (c/white "Access tokens require") (c/cyan "repo scope") (c/white "for private repositories and") (c/cyan "public_repo scope")  (c/white "for public repositories."))
+           (println "More info at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token")
+           (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
+  (check-gh-token)
   (println (c/cyan "Looking for latest version of") (c/white branch) (c/cyan "..."))
   (let [{artifact-id :id
          created-at :created_at
