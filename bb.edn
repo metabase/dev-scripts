@@ -77,4 +77,5 @@
                     (c/magenta "In directory: " (tasks/env "MB_DIR")))
                   (shell {:extra-env env+ :dir (tasks/env "MB_DIR")} cmd))}}
  :deps {escherize/bask {:git/url "https://github.com/escherize/bask.git"
-                        :git/sha "407dbad68f70c45165322c54c896fea844da2a75"}}}
+                        :git/sha "407dbad68f70c45165322c54c896fea844da2a75" :x 1}
+        table/table {:mvn/version "0.5.0"}}}
