@@ -35,8 +35,8 @@
                               :choices (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
                                          (tasks/list-branches
                                            (tasks/env "MB_DIR" (fn [v]
-                                                                 (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
-                                                                 (c/white "export" (str v "=path/to/metabase"))
+                                                                 (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
+                                                                 (println (c/white "export" (str v "=path/to/metabase")))
                                                                  (System/exit 1)))))
                               :prompt :select}
                              {:id :port
