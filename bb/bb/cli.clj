@@ -1,11 +1,8 @@
 (ns bb.cli
-  (:require [babashka.deps :as deps]
-            [clojure.tools.cli :refer [parse-opts]]
+  (:require [bask.bask :as b]
             [bask.colors :as c]
-            [bask.bask :as b]))
+            [clojure.tools.cli :refer [parse-opts]]))
 
-(deps/add-deps '{:deps {table/table {:mvn/version "0.5.0"}}})
-(require '[table.core :as t])
 (defn tbl [x] (t/table x :fields [:short :long :msg :required? :default :options :id] :style :unicode-3d))
 
 (defn- ->cli-tools-option [{:keys [msg short long id default parse-fn update-fn validate] :as opt}]
@@ -49,7 +46,7 @@
   (check-print-help args current-task opts)
   (let [options (mapv ->cli-tools-option opts)
         {:keys [error summary arguments] parsed-opts :options} (try (parse-opts args options)
-                                                                    (catch Throwable t {:error "parse-opts threw."}))
+                                                                    (catch Throwable _t {:error "parse-opts threw."}))
         _ (when error (println "WARNING:" "args, " args  "options," options " | " error "|" summary))
         required-opts (filter :required? options)
         missing-opts (remove (fn [req-opt] (contains? parsed-opts (:id req-opt))) required-opts)

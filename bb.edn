@@ -1,7 +1,8 @@
 {:min-bb-version "0.9.162"
  :paths ["bb"]
  :deps {escherize/bask {:git/url "https://github.com/escherize/bask.git"
-                        :git/sha "adfde5d60a2136d0b6b127cb6ecb41cb49c982c2"}}
+                        :git/sha "adfde5d60a2136d0b6b127cb6ecb41cb49c982c2"}
+        table/table {:mvn/version "0.5.0"}}
  :tasks {:requires [[bb.cli :as cli]
                     [bb.tasks :as t]
                     [bask.colors :as c]]
@@ -15,12 +16,12 @@
                               :short "-b"
                               :long "--branch BRANCH"
                               :required? true
-                              :choices (delay ;; there is no need to compute choices if a branch is passed in e.g.: 'bb run-branch -b some_branch_name'
-                                         (t/list-branches
-                                           (t/env "MB_DIR" (fn [v]
-                                                             (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:")
-                                                             (c/white "export" (str v "=path/to/metabase"))
-                                                             (System/exit 1)))))
+                              :choices (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
+                                         (tasks/list-branches
+                                           (tasks/env "MB_DIR" (fn [v]
+                                                                 (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
+                                                                 (println (c/white "export" (str v "=path/to/metabase")))
+                                                                 (System/exit 1)))))
                               :prompt :select}
                              {:id :port
                               :msg "What port should we run it on?"
