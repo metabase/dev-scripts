@@ -11,7 +11,7 @@
       (install-fn)
       (println (<< "{{program}} should be installed now. Thanks!")))))
 
-(defn- wait
+(defn wait
   "Print message, followed by .'s until @*continue? is false."
   [message]
   (let [*continue? (atom true)]

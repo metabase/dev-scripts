@@ -1,9 +1,11 @@
 (ns bb.cli
   (:require [bask.bask :as b]
             [bask.colors :as c]
-            [clojure.tools.cli :refer [parse-opts]]))
+            [clojure.tools.cli :refer [parse-opts]]
+            [table.core :as t]))
 
-(defn tbl [x] (t/table x :fields [:short :long :msg :required? :default :options :id] :style :unicode-3d))
+(defn tbl [x]
+  (t/table x :fields [:short :long :msg :required? :default :options :id] :style :unicode-3d))
 
 (defn- ->cli-tools-option [{:keys [msg short long id default parse-fn update-fn validate] :as opt}]
   (vec (concat [short long msg]
