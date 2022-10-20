@@ -6,6 +6,7 @@
  :tasks {:requires [[bb.cli :as cli]
                     [bb.tasks :as t]
                     [bask.colors :as c]]
+
          run-branch
          {:requires [[bb.dl-and-run :as dl]]
           :doc "Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI."

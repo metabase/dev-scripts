@@ -38,11 +38,11 @@
 
 (defn env
   ([] (into {} (System/getenv)))
-  ([var] (env var (fn [_var] (println "Warning: cannot find " (c/red var) " in env."))))
-  ([var error-fn] (or ((env) (name var)) (error-fn var))))
+  ([env-var] (env env-var (fn [] (println "Warning: cannot find " (c/red env-var) " in env."))))
+  ([env-var error-thunk] (or ((env) (name env-var)) (error-thunk))))
 
 (defn print-env
-  ([] (print-env "" (env)))
+  ([] (print-env ".*" (env)))
   ([match] (print-env match (env)))
   ([match env]
    (let [important-env (->> env
