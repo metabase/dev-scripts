@@ -33,4 +33,6 @@
                              {:id :socket-repl
                               :msg "What port shall we open a socket repl on?"
                               :short "-s"
-                              :long "--socket-repl SOCKETPORT"}))}}}
+                              :long "--socket-repl SOCKETPORT"}))}
+
+         -autotab (println "https://book.babashka.org/#_terminal_tab_completion")}}
