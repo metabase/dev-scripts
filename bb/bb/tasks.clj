@@ -20,12 +20,14 @@
       (while @*continue?
         (print "|") (flush)
         (Thread/sleep 1000)))
-    *continue?))
+    (fn cancel-wait []
+      (reset! *continue? false)
+      (println))))
 
 (defn- git-fetch [mb-dir]
-  (let [*wait (wait "Fetching metabase branches")]
+  (let [done (wait "Fetching metabase branches")]
     (shell {:dir mb-dir :out :string :err :string} "git fetch")
-    (reset! *wait false)))
+    (done)))
 
 (defn list-branches [mb-dir]
   (git-fetch mb-dir)
