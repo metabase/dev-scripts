@@ -54,7 +54,7 @@
 
 (defn- check-gh-token []
   (t/env "GH_TOKEN"
-         (fn [token]
+         (fn []
            (println  "Please set " (c/green token) ".")
            (println (c/white "This API is available for authenticated users, OAuth Apps, and GitHub Apps."))
            (println (c/white "Access tokens require") (c/cyan "repo scope") (c/white "for private repositories and") (c/cyan "public_repo scope")  (c/white "for public repositories."))
