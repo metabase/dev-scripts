@@ -19,9 +19,9 @@
                               :required? true
                               :choices (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
                                          (t/list-branches
-                                           (t/env "MB_DIR" (fn [v]
+                                           (t/env "MB_DIR" (fn []
                                                              (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
-                                                             (println (c/white "export" (str v "=path/to/metabase")))
+                                                             (println (c/white "export MB_DIR=path/to/metabase"))
                                                              (System/exit 1)))))
                               :prompt :select}
                              {:id :port
