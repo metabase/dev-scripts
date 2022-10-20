@@ -1,14 +1,16 @@
 (ns bb.dl-and-run
   (:require [babashka.tasks :refer [shell]]
             [babashka.curl :as curl]
-            [clojure.term.colors :as c]
+            [bask.colors :as c]
             [bb.tasks :as t]
             [selmer.parser :refer [<<]]
             [cheshire.core :as json]
             [clojure.edn :as edn]))
 
 (defn- seek [f coll]
-  (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp))) coll))
+  (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp)))
+          nil
+          coll))
 
 (defn- gh-get [url]
   (try (-> url
@@ -29,7 +31,13 @@
                   name->dl-url (->> artifact :artifacts (group-by :name) (into {}))]
               (first (get name->dl-url "metabase-ee-uberjar"))))
           artifact-urls)
-        (throw (ex-info (str "could not find an uberjar for branch " branch) {:branch branch})))))
+        (do
+          (println "\nCould not find an uberjar for branch" (c/red branch))
+          (println "Our Github Actions retention period is currently 3 months.")
+          (println "If you are looking to run an older branch, that can be why it is not found.")
+          (println "Pushing an empty commit to the branch will rebuild it on Github Actions, which should take a few minutes.")
+          (println "More info: https://docs.github.com/en/actions/managing-workflow-runs/removing-workflow-artifacts#setting-the-retention-period-for-an-artifact")
+          (System/exit 1)))))
 
 (defn download-mb-jar!
   [dl-path dl-url]
@@ -42,15 +50,26 @@
 
 (def download-dir
   ;; artifact zips will be downloaded into download-dir/<BRANCH-NAME>/
-  (or (t/env "LOCAL_MB_DL") "../"))
+  (or (t/env "LOCAL_MB_DL" (fn [])) "../"))
+
+(defn- check-gh-token []
+  (t/env "GH_TOKEN"
+         (fn [token]
+           (println  "Please set " (c/green token) ".")
+           (println (c/white "This API is available for authenticated users, OAuth Apps, and GitHub Apps."))
+           (println (c/white "Access tokens require") (c/cyan "repo scope") (c/white "for private repositories and") (c/cyan "public_repo scope")  (c/white "for public repositories."))
+           (println "More info at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token")
+           (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
-  (println (c/cyan "Looking for latest version of") (c/white branch) (c/cyan "..."))
-  (let [{artifact-id :id
+  (check-gh-token)
+  (let [finished (t/wait (str "Finding uberjar for branch: " (c/green branch)))
+        {artifact-id :id
          created-at :created_at
          dl-url :archive_download_url
          :as info} (branch->latest-artifact branch)
         branch-dir (str download-dir branch)]
+    (finished)
     (println (c/cyan "Found latest artifact!"))
     (println (c/magenta (str "           id: " artifact-id)))
     (println (c/magenta (str "   created-at: " created-at)))

@@ -19,10 +19,10 @@ To see a list of avaliable tasks, run:
 
 for help with a task, use `-h` or `--help`.
 
-    bb download-and-run-jar --help
+    bb run-branch --help
     
 ``` shell
-  Download and run a jar for a branch, and run it on a port
+  Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI.
 
  -b --branch BRANCH
 ┌────────────┬─────────────────────────────────────────╖
