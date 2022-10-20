@@ -55,10 +55,11 @@
 (defn- check-gh-token []
   (t/env "GH_TOKEN"
          (fn []
-           (println  "Please set " (c/green token) ".")
+           (println  "Please set GH_TOKEN.")
            (println (c/white "This API is available for authenticated users, OAuth Apps, and GitHub Apps."))
            (println (c/white "Access tokens require") (c/cyan "repo scope") (c/white "for private repositories and") (c/cyan "public_repo scope")  (c/white "for public repositories."))
            (println "More info at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token")
+           (println "You can make one (classic) here: https://github.com/settings/tokens")
            (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
