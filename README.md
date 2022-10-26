@@ -80,7 +80,7 @@ mysql --user=root --host=localhost --port=3306 --database=metabase_test
 You need to have Docker installed to use these scripts!
 
 #### For Macbook with ARM chips
-Some drivers like oracle, vertical or sqlserver are currently not able to run on Apple M chips.
+Some drivers like oracle, vertica, sqlserver, mysql (and possibly more) are currently not able to run on Apple M chips.
 The work around is using colima:
 1. [Install](https://github.com/abiosoft/colima#getting-started) colima
 2. Start it with `colima start --arch x86_64 --memory 4`
