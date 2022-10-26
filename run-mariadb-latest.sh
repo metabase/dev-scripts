@@ -41,6 +41,6 @@ or add a profile for it to your ~/.clojure/deps.edn:
 
 Connect with the MySQL CLI tool:
 
-mysql --user=root --host=127.0.0.1 --port=3306 --database=metabase_test
+mysql --user=root --host=localhost --port=3306 --database=metabase_test
 
 EOF

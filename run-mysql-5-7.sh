@@ -34,6 +34,6 @@ or add a profile for it to your ~/.clojure/deps.edn:
 
 Connect with the MySQL CLI tool:
 
-mysql --user=root --host=127.0.0.1 --port=3307 --database=circle_test
+mysql --user=root --host=localhost --port=3307 --database=circle_test
 
 EOF

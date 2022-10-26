@@ -74,7 +74,7 @@ jdbc:mysql://localhost:3306/metabase_test?user=root
 
 MB_DB_TYPE=mysql MB_DB_DBNAME=metabase_test MB_DB_HOST=localhost MB_DB_PASS='' MB_DB_PORT=3306 MB_DB_USER=root MB_MYSQL_TEST_USER=root
 
-mysql --user=root --host=127.0.0.1 --port=3306 --database=metabase_test
+mysql --user=root --host=localhost --port=3306 --database=metabase_test
 ```
 
 You need to have Docker installed to use these scripts!
