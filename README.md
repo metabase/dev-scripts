@@ -15,46 +15,21 @@ To see a list of avaliable tasks, run:
 
     bb tasks
 
+#### setup for `run-branch`
+
+You'll need two environment variables set to use `bb run-branch`.
+
+    MB_DIR=/path/to/metabase
+    GH_TOKEN=ghp_asdasdasdasdasdasdasdasdasd
+
+`GH_TOKEN` needs to be a classic can be obtained from: [https://github.com/settings/tokens](https://github.com/settings/tokens). Be sure to tick the *repo* permission.
+
 #### How to get help
 
 for help with a task, use `-h` or `--help`.
 
     bb run-branch --help
     
-``` shell
-  Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI.
-
- -b --branch BRANCH
-┌────────────┬─────────────────────────────────────────╖
-│ key        │ value                                   ║
-├────────────┼─────────────────────────────────────────╢
-│ :id        │ :branch                                 ║
-│ :title     │ What branch would you like to use?      ║
-│ :required? │ true                                    ║
-│ :options   │ sci.impl.fns$fun$arity_0__3527@2471695a ║
-│ :prompt    │ :select                                 ║
-╘════════════╧═════════════════════════════════════════╝
-
- -p --port PORT
-┌────────────┬─────────────────────────────────────╖
-│ key        │ value                               ║
-├────────────┼─────────────────────────────────────╢
-│ :id        │ :port                               ║
-│ :title     │ What port would you like to run on? ║
-│ :required? │ true                                ║
-│ :prompt    │ :number                             ║
-╘════════════╧═════════════════════════════════════╝
-
- -s --socket-repl SOCKETPORT
-┌────────────┬─────────────────────────────────╖
-│ key        │ value                           ║
-├────────────┼─────────────────────────────────╢
-│ :id        │ :socket-repl                    ║
-│ :title     │ Run metabase with a socket repl ║
-│ :prompt    │ :select                         ║
-│ :choices   │ [true false]                    ║
-╘════════════╧═════════════════════════════════╝
-```
 
 ### Database Scripts
 

@@ -7,7 +7,9 @@
             [cheshire.core :as json]
             [clojure.edn :as edn]))
 
-(defn- seek [f coll]
+(defn- keep-first
+  "like (fn [f coll] (first (keep f coll))) but does not do chunking."
+  [f coll]
   (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp)))
           nil
           coll))
@@ -20,24 +22,30 @@
            (json/decode true))
        (catch Exception e (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
 
+(defn is-artifact-url-uberjar? [ee-or-oss]
+  {:pre [#{"ee" "oss"} ee-or-oss]}
+  (fn [url]
+    (let [artifact (gh-get url)
+          name->dl-url (->> artifact :artifacts (group-by :name) (into {}))]
+      ;; "metabase-oss-uberjar"
+      (first (get name->dl-url (str "metabase-" ee-or-oss "-uberjar"))))))
+
+(defn- no-artifact-found-error! [branch]
+  (println "\nCould not find an uberjar for branch" (c/red branch))
+  (println "Our Github Actions retention period is currently 3 months.")
+  (println "If you are looking to run an older branch, that can be why it is not found.")
+  (println "Pushing an empty commit to the branch will rebuild it on Github Actions, which should take a few minutes.")
+  (println "More info: https://docs.github.com/en/actions/managing-workflow-runs/removing-workflow-artifacts#setting-the-retention-period-for-an-artifact")
+  (System/exit 1))
+
 (defn branch->latest-artifact [branch]
-  (let [artifact-urls (-> (str "https://api.github.com/repos/metabase/metabase/actions/runs?branch=" branch)
-                          gh-get
-                          :workflow_runs
-                          ((fn [x] (mapv :artifacts_url x))))]
-    (or (seek
-          (fn [url]
-            (let [artifact (gh-get url)
-                  name->dl-url (->> artifact :artifacts (group-by :name) (into {}))]
-              (first (get name->dl-url "metabase-ee-uberjar"))))
-          artifact-urls)
-        (do
-          (println "\nCould not find an uberjar for branch" (c/red branch))
-          (println "Our Github Actions retention period is currently 3 months.")
-          (println "If you are looking to run an older branch, that can be why it is not found.")
-          (println "Pushing an empty commit to the branch will rebuild it on Github Actions, which should take a few minutes.")
-          (println "More info: https://docs.github.com/en/actions/managing-workflow-runs/removing-workflow-artifacts#setting-the-retention-period-for-an-artifact")
-          (System/exit 1)))))
+  (let [artifact-urls (->> branch
+                           (str "https://api.github.com/repos/metabase/metabase/actions/runs?per_page=100&branch=")
+                           gh-get
+                           :workflow_runs
+                           (mapv :artifacts_url))]
+    (or (keep-first (is-artifact-url-uberjar? "ee") artifact-urls)
+        (no-artifact-found-error! branch))))
 
 (defn download-mb-jar!
   [dl-path dl-url]
@@ -100,7 +108,7 @@
     (println (<< "starting branch {{branch}} of metabase on port:{{port}}..."))
     (future (do (while (not= 200 (:status (curl/get (str "localhost:" port) {:throw false})))
                   (Thread/sleep 1000))
-                (shell (str "open http://localhost:" port))))
+                (t/open-url (str "http://localhost:" port))))
     (let [cmd (str "java "
                    (when socket-repl (str "-Dclojure.server.repl=\"{:port " socket-repl " :accept clojure.core.server/repl}\" "))
                    "-jar " "metabase_" branch ".jar")]

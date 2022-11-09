@@ -10,13 +10,15 @@
          run-branch
          {:requires [[bb.dl-and-run :as dl]]
           :doc "Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI."
+          :examples [["bb run-branch --branch master --port 4445" "Run master branch on port 4445"]
+                     ["bb run-branch" "Pick branch and port, and run branch on port"]
+                     ["bb run-branch -p 9939 -s 9938" "Pick a branch, and run it on port 4445 with a socket repl on 9938"]]
           :task (dl/download-and-run-latest-jar!
                   (cli/menu! (current-task)
                              {:id :branch
                               :msg "What branch should we run?"
                               :short "-b"
                               :long "--branch BRANCH"
-                              :required? true
                               :choices (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
                                          (t/list-branches
                                            (t/env "MB_DIR" (fn []
@@ -28,11 +30,9 @@
                               :msg "What port should we run it on?"
                               :short "-p"
                               :long "--port PORT"
-                              :required? true
                               :prompt :number}
                              {:id :socket-repl
                               :msg "What port shall we open a socket repl on?"
                               :short "-s"
                               :long "--socket-repl SOCKETPORT"}))}
-
          -autotab (println "https://book.babashka.org/#_terminal_tab_completion")}}
