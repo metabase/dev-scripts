@@ -1,6 +1,8 @@
 (ns bb.tasks
   (:require [bask.colors :as c]
             [babashka.tasks :refer [shell]]
+            [bencode.core :as bencode]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [selmer.parser :refer [<<]]))
 
@@ -55,3 +57,36 @@
      (println)
      (doseq [[setting value] important-env]
        (print (c/yellow (spaces setting))) (print (c/white " : ")) (println (c/cyan value))))))
+
+(defn- os
+  "Returns :win, :mac, :unix, or nil"
+  []
+  (case (str/lower-case (apply str (take 3 (System/getProperty "os.name"))))
+    "win" :win
+    "mac" :mac
+    "nix" :unix
+    "nux" :unix
+    nil))
+
+(defn open-url
+  "Opens the given file (a string, File, or file URI) in the default
+  application for the current desktop environment. Returns nil"
+  [url]
+  {:pre [(str/starts-with? url "http")]}
+  ;; There's an 'open' method in java.awt.Desktop but it hangs on Windows
+  ;; using Clojure Box and turns the process into a GUI process on Max OS X.
+  ;; Maybe it's ok for Linux?
+  (case (os)
+    :mac (shell "open " url)
+    :win (shell "cmd " (str "/c start " url))
+    :unix (shell "xdg-open " url))
+  nil)
+
+ ;; taken from https://book.babashka.org/#_interacting_with_an_nrepl_server
+(defn nrepl-eval [port expr]
+  (let [s (java.net.Socket. "localhost" port)
+        out (.getOutputStream s)
+        in (java.io.PushbackInputStream. (.getInputStream s))
+        _ (bencode/write-bencode out {"op" "eval" "code" expr})
+        bytes (get (bencode/read-bencode in) "value")]
+    (String. bytes)))
