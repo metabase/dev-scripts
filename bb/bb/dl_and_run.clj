@@ -10,7 +10,8 @@
 (defn- keep-first
   "like (fn [f coll] (first (keep f coll))) but does not do chunking."
   [f coll]
-  (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp)))
+  (reduce (fn [_ element]
+            (when-let [resp (f element)] (reduced resp)))
           nil
           coll))
 
@@ -20,7 +21,8 @@
                                 "Authorization" (str "Bearer " (t/env "GH_TOKEN"))}})
            :body
            (json/decode true))
-       (catch Exception e (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
+       (catch Exception e
+         (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
 
 (defn is-artifact-url-uberjar? [ee-or-oss]
   {:pre [#{"ee" "oss"} ee-or-oss]}
@@ -60,7 +62,7 @@
   ;; artifact zips will be downloaded into download-dir/<BRANCH-NAME>/
   (or (t/env "LOCAL_MB_DL" (fn [])) "../"))
 
-(defn- check-gh-token []
+(defn- check-gh-token! []
   (t/env "GH_TOKEN"
          (fn []
            (println  "Please set GH_TOKEN.")
@@ -71,7 +73,7 @@
            (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
-  (check-gh-token)
+  (check-gh-token!)
   (let [finished (t/wait (str "Finding uberjar for branch: " (c/green branch)))
         {artifact-id :id
          created-at :created_at
