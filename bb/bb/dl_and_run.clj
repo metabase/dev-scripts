@@ -38,14 +38,17 @@
   (println "If you are looking to run an older branch, that can be why it is not found.")
   (println "Pushing an empty commit to the branch will rebuild it on Github Actions, which should take a few minutes.")
   (println "More info: https://docs.github.com/en/actions/managing-workflow-runs/removing-workflow-artifacts#setting-the-retention-period-for-an-artifact")
+  (println "Could also happen if there are a lot of commits in quick succession")
   (System/exit 1))
 
 (defn branch->latest-artifact [branch]
   (let [artifact-urls (->> branch
+                           ;; TODO is 100 this enough?
                            (str "https://api.github.com/repos/metabase/metabase/actions/runs?per_page=100&branch=")
                            gh-get
                            :workflow_runs
                            (mapv :artifacts_url))]
+
     (or (keep-first (is-artifact-url-uberjar? "ee") artifact-urls)
         (no-artifact-found-error! branch))))
 
@@ -78,13 +81,21 @@
         {artifact-id :id
          created-at :created_at
          dl-url :archive_download_url
+         sha :head_sha
          :as info} (branch->latest-artifact branch)
         branch-dir (str download-dir branch)]
     (finished)
     (println (c/cyan "Found latest artifact!"))
-    (println (c/magenta (str "           id: " artifact-id)))
-    (println (c/magenta (str "   created-at: " created-at)))
-    (println (c/magenta (str " download-url: " dl-url)))
+    (println (c/magenta (str "      git SHA: " (c/green sha))))
+    (println (c/magenta (str "  Artifact Id: " (c/green artifact-id))))
+    (println (c/magenta (str "   Created At: " (c/green created-at))))
+    ;; TODO
+    ;; We can check that the sha matches
+    ;; I couldn't find the latest.
+    ;; - you need to manually build it, or try again later. sorry.
+    ;; - _or_ use the older artifact?
+    (println (c/magenta (str " Download Url: " (c/green dl-url))))
+    (prn info)
     (shell (str "mkdir -p " branch-dir))
     (if (= (try (edn/read-string (slurp (str branch-dir "/info.edn")))
                 (catch Throwable _ ::nothing-there))
