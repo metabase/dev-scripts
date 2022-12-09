@@ -10,7 +10,8 @@
 (defn- keep-first
   "like (fn [f coll] (first (keep f coll))) but does not do chunking."
   [f coll]
-  (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp)))
+  (reduce (fn [_ element]
+            (when-let [resp (f element)] (reduced resp)))
           nil
           coll))
 
@@ -20,7 +21,8 @@
                                 "Authorization" (str "Bearer " (t/env "GH_TOKEN"))}})
            :body
            (json/decode true))
-       (catch Exception e (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
+       (catch Exception e
+         (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
 
 (defn is-artifact-url-uberjar? [ee-or-oss]
   {:pre [#{"ee" "oss"} ee-or-oss]}
@@ -36,14 +38,17 @@
   (println "If you are looking to run an older branch, that can be why it is not found.")
   (println "Pushing an empty commit to the branch will rebuild it on Github Actions, which should take a few minutes.")
   (println "More info: https://docs.github.com/en/actions/managing-workflow-runs/removing-workflow-artifacts#setting-the-retention-period-for-an-artifact")
+  (println "Could also happen if there are a lot of commits in quick succession")
   (System/exit 1))
 
 (defn branch->latest-artifact [branch]
   (let [artifact-urls (->> branch
+                           ;; TODO is 100 this enough?
                            (str "https://api.github.com/repos/metabase/metabase/actions/runs?per_page=100&branch=")
                            gh-get
                            :workflow_runs
                            (mapv :artifacts_url))]
+
     (or (keep-first (is-artifact-url-uberjar? "ee") artifact-urls)
         (no-artifact-found-error! branch))))
 
@@ -60,7 +65,7 @@
   ;; artifact zips will be downloaded into download-dir/<BRANCH-NAME>/
   (or (t/env "LOCAL_MB_DL" (fn [])) "../"))
 
-(defn- check-gh-token []
+(defn- check-gh-token! []
   (t/env "GH_TOKEN"
          (fn []
            (println  "Please set GH_TOKEN.")
@@ -71,18 +76,26 @@
            (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
-  (check-gh-token)
+  (check-gh-token!)
   (let [finished (t/wait (str "Finding uberjar for branch: " (c/green branch)))
         {artifact-id :id
          created-at :created_at
          dl-url :archive_download_url
+         sha :head_sha
          :as info} (branch->latest-artifact branch)
         branch-dir (str download-dir branch)]
     (finished)
     (println (c/cyan "Found latest artifact!"))
-    (println (c/magenta (str "           id: " artifact-id)))
-    (println (c/magenta (str "   created-at: " created-at)))
-    (println (c/magenta (str " download-url: " dl-url)))
+    (println (c/magenta (str "      git SHA: " (c/green sha))))
+    (println (c/magenta (str "  Artifact Id: " (c/green artifact-id))))
+    (println (c/magenta (str "   Created At: " (c/green created-at))))
+    ;; TODO
+    ;; We can check that the sha matches
+    ;; I couldn't find the latest.
+    ;; - you need to manually build it, or try again later. sorry.
+    ;; - _or_ use the older artifact?
+    (println (c/magenta (str " Download Url: " (c/green dl-url))))
+    (prn info)
     (shell (str "mkdir -p " branch-dir))
     (if (= (try (edn/read-string (slurp (str branch-dir "/info.edn")))
                 (catch Throwable _ ::nothing-there))
