@@ -11,11 +11,11 @@ docker rm -fv mongo-4 2>/dev/null || echo "Nothing to remove"
 docker run -p 27017:27017 \
        --name mongo-4 \
        --rm \
-       -d circleci/mongo:4.0
+       -d circleci/mongo:4.2
 
 cat <<EOF
 
-Started MongoDB 4.0 on Port 27017.
+Started MongoDB 4.2 on Port 27017.
 
 MB_MONGO_TEST_HOST=localhost MB_MONGO_TEST_PORT=27017
 
