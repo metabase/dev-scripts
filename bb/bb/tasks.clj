@@ -14,22 +14,25 @@
       (println (<< "{{program}} should be installed now. Thanks!")))))
 
 (defn wait
-  "Print message, followed by .'s until @*continue? is false."
-  [message]
+  "Print message, followed by char's until @*continue? is false."
+  [message & [char]]
   (let [*continue? (atom true)]
     (future
       (print (str message ": ")) (flush)
       (while @*continue?
-        (print "|") (flush)
+        (print (or char "|")) (flush)
         (Thread/sleep 1000)))
     (fn cancel-wait []
       (reset! *continue? false)
       (println))))
 
 (defn- git-fetch [mb-dir]
-  (let [done (wait "Fetching metabase branches")]
-    (shell {:dir mb-dir :out :string :err :string} "git fetch")
-    (done)))
+  (let [done (wait "Fetching metabase branches")
+        o (shell {:dir mb-dir
+                  :out :string
+                  :err :string} "git fetch --all")]
+    (done)
+    o))
 
 (defn list-branches [mb-dir]
   (git-fetch mb-dir)

@@ -3,36 +3,44 @@
  :deps {escherize/bask {:git/url "https://github.com/escherize/bask.git"
                         :git/sha "adfde5d60a2136d0b6b127cb6ecb41cb49c982c2"}
         table/table {:mvn/version "0.5.0"}}
- :tasks {:requires [[bb.cli :as cli]
+ :tasks {:requires [[bask.colors :as c]
+                    [bb.cli :as cli]
                     [bb.tasks :as t]
-                    [bask.colors :as c]]
+                    [clojure.string :as str]]
 
          run-branch
          {:requires [[bb.dl-and-run :as dl]]
           :doc "Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI."
           :examples [["bb run-branch --branch master --port 4445" "Run master branch on port 4445"]
-                     ["bb run-branch" "Pick branch and port, and run branch on port"]
-                     ["bb run-branch -p 9939 -s 9938" "Pick a branch, and run it on port 4445 with a socket repl on 9938"]]
-          :task (dl/download-and-run-latest-jar!
-                  (cli/menu! (current-task)
-                             {:id :branch
-                              :msg "What branch should we run?"
-                              :short "-b"
-                              :long "--branch BRANCH"
-                              :choices (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
-                                         (t/list-branches
-                                           (t/env "MB_DIR" (fn []
-                                                             (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
-                                                             (println (c/white "export MB_DIR=path/to/metabase"))
-                                                             (System/exit 1)))))
-                              :prompt :select}
-                             {:id :port
-                              :msg "What port should we run it on?"
-                              :short "-p"
-                              :long "--port PORT"
-                              :prompt :number}
-                             {:id :socket-repl
-                              :msg "What port shall we open a socket repl on?"
-                              :short "-s"
-                              :long "--socket-repl SOCKETPORT"}))}
+                     ["bb run-branch"                             "Pick branch and port, and run branch on port"]
+                     ["bb run-branch -p 9939 -s 9938"             "Pick a branch, and run it on port 4445 with a socket repl on 9938"]]
+          :task
+          (dl/download-and-run-latest-jar!
+            (let [list-branches (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
+                                  (t/list-branches
+                                    (t/env "MB_DIR" (fn []
+                                                      (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
+                                                      (println (c/white "export MB_DIR=path/to/metabase"))
+                                                      (System/exit 1)))))]
+              (cli/menu! (current-task)
+                         {:id :branch :msg "What branch should we run?" :short "-b" :long "--branch BRANCH" :choices list-branches :prompt :select}
+                         {:id :port :msg "What port should we run it on?" :short "-p" :long "--port PORT" :prompt :number}
+                         {:id :socket-repl :msg "What port shall we open a socket repl on?" :short "-s" :long "--socket-repl SOCKETPORT"})))}
+
+         metabuild
+         {:doc "Starts metabase locally in dev mode."
+          :requires [[bb.meta :as meta]]
+          :task (let [{:keys [app-db user-name password extensions] :as p}
+                      (cli/menu! (current-task)
+                                 {:id :app-db :title "Which DB should we use for metabase's data?" :choices ["postgres" "h2" "mysql"] :required? true :short "-d" :long "--database DB" :prompt :select}
+                                 {:id :user-name :short "-u" :long "--username USER" :default (t/whoami)}
+                                 {:id :password :short "-p" :long "--pw PW" :default "password"}
+                                 {:id :extensions
+                                  :short "-e"
+                                  :long "--exensions EXT"
+                                  :default ["dev" "ee" "ee-dev" "drivers" "drivers-dev" "cider/nrepl"]
+                                  :prompt :multi})]
+                  ;; (prn p)
+                  (meta/build app-db user-name password extensions))}
+
          -autotab (println "https://book.babashka.org/#_terminal_tab_completion")}}
