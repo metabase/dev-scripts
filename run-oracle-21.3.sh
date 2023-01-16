@@ -10,11 +10,11 @@ docker kill $CONTAINER_NAME 2>/dev/null || echo "Nothing to kill"
 
 docker rm $CONTAINER_NAME 2>/dev/null || echo "Nothing to remove"
 
-docker run -p 1521:1521 \
+docker run -p 1521:1521 -p 2484:2484 \
        --name $CONTAINER_NAME \
        --rm \
        -e ORACLE_PASSWORD=password \
-       -d gvenzl/oracle-xe:21.3.0-slim
+       -d metabase/qa-databases:oracle-xe-21.3
 
 cat <<EOF
 Started Oracle Express Edition 21.3.0 on port 1521. Wait 10-20 seconds for it to finish starting.
