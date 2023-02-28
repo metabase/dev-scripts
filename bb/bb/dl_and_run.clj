@@ -140,13 +140,11 @@
 
 (defn checks-for-branch [{branch :branch}]
   ;; note: this is a ref, so it can e.g. also be a sha.
-  (let [status->count (->> (str "https://api.github.com/repos/metabase/metabase/commits/" branch "/check-runs")
-                           gh-get
-                           :check_runs
-                           (mapv :conclusion)
-                           (mapv (fn [x] (if (nil? x) :in-progress (keyword x))))
-                           frequencies
-                           (sort-by first)
-                           reverse)]
-    (doseq [[s c] status->count]
-      (println (pretty s) s (str "(" c ") ")))))
+  (->> (str "https://api.github.com/repos/metabase/metabase/commits/" branch "/check-runs")
+       gh-get
+       :check_runs
+       (mapv :conclusion)
+       (mapv (fn [x] (if (nil? x) :in-progress (keyword x))))
+       frequencies
+       (sort-by first)
+       reverse))
