@@ -22,7 +22,10 @@
            :body
            (json/decode true))
        (catch Exception e
-         (throw (ex-info (str "Github GET error.\n" (pr-str e)) {:url url})))))
+         (let [{:keys [status]} (ex-data e)]
+           (when (= status 401) (println (c/red "Is your GH_TOKEN out of date?")))
+           (throw (ex-info (str "Error trying to get url " url " status: " status)
+                           {:status status :url url}))))))
 
 (defn is-artifact-url-uberjar? [ee-or-oss]
   {:pre [#{"ee" "oss"} ee-or-oss]}
@@ -65,7 +68,7 @@
   ;; artifact zips will be downloaded into download-dir/<BRANCH-NAME>/
   (or (t/env "LOCAL_MB_DL" (fn [])) "../"))
 
-(defn- check-gh-token! []
+(defn check-gh-token! []
   (t/env "GH_TOKEN"
          (fn []
            (println  "Please set GH_TOKEN.")
@@ -76,7 +79,6 @@
            (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
-  (check-gh-token!)
   (let [finished (t/wait (str "Finding uberjar for branch: " (c/green branch)))
         {artifact-id :id
          created-at :created_at
@@ -109,12 +111,12 @@
     (println "Unzipping artifact...")
     (try
       (shell {:dir branch-dir :out nil} "unzip -o metabase.zip")
-      (catch Exception e (throw (ex-info
+      (catch Exception _ (throw (ex-info
                                   "Problem unzipping... has the artifact expired?"
                                   (merge {:zip-location (str branch-dir "/metabase.zip")
                                           :zip-length (count (slurp (str branch-dir "/metabase.zip")))
                                           :branch branch}
-                                         (if (< 10000 (count (slurp (str branch-dir "/metabase.zip"))))
+                                         (when (< 10000 (count (slurp (str branch-dir "/metabase.zip"))))
                                            {:zip-contents (slurp (str branch-dir "/metabase.zip"))}))))))
     (println "Artifact unzipped!")
     (shell {:dir branch-dir :out nil} (str "mv target/uberjar/metabase.jar ./metabase_" branch ".jar"))
@@ -129,3 +131,22 @@
       (shell {:dir branch-dir
               :out :inherit
               :env {"MB_JETTY_PORT" port}} cmd))))
+
+(def pretty {:success "✅"
+             :skipped "⏭️ "
+             :cancelled "⏹️ "
+             :in-progress "🔄"
+             :failure "❌"})
+
+(defn checks-for-branch [{branch :branch}]
+  ;; note: this is a ref, so it can e.g. also be a sha.
+  (let [status->count (->> (str "https://api.github.com/repos/metabase/metabase/commits/" branch "/check-runs")
+                           gh-get
+                           :check_runs
+                           (mapv :conclusion)
+                           (mapv (fn [x] (if (nil? x) :in-progress (keyword x))))
+                           frequencies
+                           (sort-by first)
+                           reverse)]
+    (doseq [[s c] status->count]
+      (println (pretty s) s (str "(" c ") ")))))
