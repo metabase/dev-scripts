@@ -30,7 +30,8 @@ or add a profile for it to your ~/.clojure/deps.edn:
     "-Dmb.db-port=3307"
     "-Dmb.db.dbname=circle_test"
     "-Dmb.db.user=root"
-    "-Dmb.db.pass="]}}}
+    "-Dmb.db.pass="
+    "-Dmb.mysql.test.port=3307"]}}}
 
 Connect with the MySQL CLI tool:
 
