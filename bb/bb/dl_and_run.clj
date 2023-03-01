@@ -140,13 +140,11 @@
 
 (defn checks-for-branch [{branch :branch}]
   ;; note: this is a ref, so it can e.g. also be a sha.
-  (try
-    (->> (str "https://api.github.com/repos/metabase/metabase/commits/" branch "/check-runs")
-         gh-get
-         :check_runs
-         (mapv :conclusion)
-         (mapv (fn [x] (if (nil? x) :in-progress (keyword x))))
-         frequencies
-         (sort-by first)
-         reverse)
-    (catch Exception e {})))
+  (->> (str "https://api.github.com/repos/metabase/metabase/commits/" branch "/check-runs")
+       gh-get
+       :check_runs
+       (mapv :conclusion)
+       (mapv (fn [x] (if (nil? x) :in-progress (keyword x))))
+       frequencies
+       (sort-by first)
+       reverse))
