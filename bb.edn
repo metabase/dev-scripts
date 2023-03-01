@@ -51,7 +51,9 @@
                              (if (:watch? branch-info)
                                (loop []
                                  (let [check (dl/checks-for-branch branch-info)]
-                                   (println "------------------------------")
+                                   (println (str "------[ "
+                                                 (.format (java.text.SimpleDateFormat. "hh:mm:ss a") (java.util.Date.))
+                                                 " ]--------"))
                                    (doseq [[s c] check]
                                      (println (dl/pretty s) s (str "(" c ") ")))
                                    (when-not (= (keys check) [:success])
