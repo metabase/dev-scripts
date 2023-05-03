@@ -19,7 +19,7 @@ Started MySQL Latest on port 3308.
 
 JDBC URL: jdbc:mysql://localhost:3308/metabase_test?user=root
 
-env vars: MB_DB_TYPE=mysql MB_DB_DBNAME=metabase_test MB_DB_HOST=localhost MB_DB_PASS='' MB_DB_PORT=3308 MB_DB_USER=root MB_MYSQL_TEST_USER=root"
+env vars: MB_DB_TYPE=mysql MB_DB_DBNAME=metabase_test MB_DB_HOST=localhost MB_DB_PASS='' MB_DB_PORT=3308 MB_DB_USER=root MB_MYSQL_TEST_USER=root
 
 Clojure CLI:
 
