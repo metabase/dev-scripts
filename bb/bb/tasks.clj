@@ -2,7 +2,6 @@
   (:require [bask.colors :as c]
             [babashka.tasks :refer [shell]]
             [bencode.core :as bencode]
-            [clojure.edn :as edn]
             [clojure.string :as str]
             [selmer.parser :refer [<<]]))
 
@@ -59,7 +58,7 @@
          spaces (fn [setting] (str (apply str (repeat (- key-print-width (count setting)) " ")) setting))]
      (println)
      (doseq [[setting value] important-env]
-       (print (c/yellow (spaces setting))) (print (c/white " : ")) (println (c/cyan value))))))
+       (print (c/yellow setting)) (print (c/white "=")) (println (c/cyan value))))))
 
 (defn- os
   "Returns :win, :mac, :unix, or nil"
