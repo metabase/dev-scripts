@@ -126,11 +126,11 @@
                 (t/open-url (str "http://localhost:" port))))
     (let [cmd (str "java "
                    (when socket-repl (str "-Dclojure.server.repl=\"{:port " socket-repl " :accept clojure.core.server/repl}\" "))
-                   "-jar " "metabase_" branch ".jar")]
+                   "-jar " "metabase_" branch ".jar")
+          env+ (assoc (t/env) "MB_JETTY_PORT" port)]
       (println (c/white "Running: ") (c/green cmd))
-      (shell {:dir branch-dir
-              :out :inherit
-              :env (assoc (t/env) "MB_JETTY_PORT" port)} cmd))))
+      (t/print-env "mb" env+)
+      (shell {:dir branch-dir :out :inherit :env env+} cmd))))
 
 (def pretty {:success "✅"
              :skipped "⏭️ "
