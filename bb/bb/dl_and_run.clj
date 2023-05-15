@@ -79,7 +79,7 @@
            (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
-  (let [finished (t/wait (str "Finding uberjar for branch: " (c/green branch)))
+  (let [finished (t/wait (str "Finding uberjar for branch" (c/green branch)) "📞")
         {artifact-id :id
          created-at :created_at
          dl-url :archive_download_url
