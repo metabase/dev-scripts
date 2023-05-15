@@ -130,7 +130,7 @@
       (println (c/white "Running: ") (c/green cmd))
       (shell {:dir branch-dir
               :out :inherit
-              :env {"MB_JETTY_PORT" port}} cmd))))
+              :env (assoc (t/env) "MB_JETTY_PORT" port)} cmd))))
 
 (def pretty {:success "✅"
              :skipped "⏭️ "
