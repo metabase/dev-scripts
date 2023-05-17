@@ -1,14 +1,10 @@
 (ns bb.quick-test
-  (:require [babashka.tasks :refer [shell]]
-            [babashka.curl :as curl]
-            [bask.colors :as c]
-            [bask.bask :as b]
-            [bb.tasks :as t]
-            [babashka.fs :as fs]
-            [selmer.parser :refer [<<]]
-            [cheshire.core :as json]
-            [clojure.edn :as edn]
-            [clojure.string :as str]))
+  (:require
+   [babashka.fs :as fs]
+   [babashka.tasks :refer [shell]]
+   [bask.colors :as c]
+   [bb.tasks :as t]
+   [clojure.string :as str]))
 
 (def test-path (str (t/env "MB_DIR") "/test"))
 
