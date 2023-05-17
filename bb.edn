@@ -85,6 +85,17 @@
                   ;; (prn p)
                   (meta/build app-db user-name password extensions))}
 
+         quick-test {:doc "Quickly run a test against a namespace."
+                     :requires [[bb.quick-test :as qt]]
+                     :task (qt/run!
+                             (:test-namespaces (cli/menu! (current-task)
+                                                          {:id :test-namespaces
+                                                           :msg "What namespace(s) to test?"
+                                                           :long "--ns NS"
+                                                           :required? true
+                                                           :prompt :multi
+                                                           :choices (delay (qt/test-nss))})))}
+
          install-autotab {:doc "Prints shell code to autocomplete tasks using bb.
                         Note: for fish shell please make sure ~/.config/fish/completions exists."
                           :examples [["bb install-autotab --shell bash >> ~/.bashrc" "Bash ^"]

@@ -53,12 +53,13 @@
   ([match env]
    (let [important-env (->> env
                             (filter (fn [[k _]] (re-find (re-pattern (str "(?i).*" match ".*")) k)))
-                            (sort-by first))
-         key-print-width (inc (apply max (mapv (comp count first) important-env)))
-         spaces (fn [setting] (str (apply str (repeat (- key-print-width (count setting)) " ")) setting))]
-     (println)
+                            (sort-by first))]
+     (println (c/underline
+                (str "Environemnt Variables" (when (not= ".*" match) (str " containing '" match "'")) " :")))
      (doseq [[setting value] important-env]
-       (print (c/yellow setting)) (print (c/white "=")) (println (c/cyan value))))))
+       (print (c/yellow setting))
+       (print (c/white "="))
+       (println (c/cyan value))))))
 
 (defn- os
   "Returns :win, :mac, :unix, or nil"
