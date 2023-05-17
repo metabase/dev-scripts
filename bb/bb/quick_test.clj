@@ -6,19 +6,19 @@
    [bb.tasks :as t]
    [clojure.string :as str]))
 
-(def test-path (str (t/env "MB_DIR") "/test"))
+(defn- test-path [] (str (t/mb-env) "/test"))
 
-(defn file->ns [path]
+(defn- file->ns [path]
   (-> path
       str
-      (str/replace (str (t/env "MB_DIR") "/test/") "")
+      (str/replace (str (t/mb-env) "/test/") "")
       (str/replace #"\.clj$" "")
       (str/replace "_" "-")
       (str/replace "/" ".")))
 
-(defn- test-nss [] (mapv file->ns (fs/glob test-path "**.clj")))
+(defn- test-nss [] (mapv file->ns (fs/glob (test-path) "**.clj")))
 
-(defn run! [nss]
+(defn go! [nss]
   (let [cmd (str "clj -X:dev:ee:ee-dev:test :only " (str/join " " nss))]
     (t/print-env "mb")
     (println (c/red "==========="))

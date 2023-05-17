@@ -61,6 +61,12 @@
        (print (c/white "="))
        (println (c/cyan value))))))
 
+(defn mb-env []
+  (env "MB_DIR" (fn []
+                  (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
+                  (println (c/white "export MB_DIR=path/to/metabase"))
+                  (System/exit 1))))
+
 (defn- os
   "Returns :win, :mac, :unix, or nil"
   []
