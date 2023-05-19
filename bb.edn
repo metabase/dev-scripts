@@ -63,6 +63,8 @@
          metabuild
          {:doc "Starts metabase locally in dev mode. Set FORCE_MB_DB_CONNECTION_URI to override connection string building"
           :requires [[bb.meta :as meta]]
+          :examples [["FORCE_MB_DB_CONNECTION_URI=mysql://localhost:3308/metabase_test?user=root bb metabuild -d mysql"
+                      "Connect to MYSQL, running against run-mariadb-latest.sh"]]
           :task (let [{:keys [app-db user-name password extensions] :as p}
                       (cli/menu! (current-task)
                         {:id :app-db :short "-d" :long "--database-type DB" :title "Which DB should we use for metabase's data?" :choices ["postgres" "h2" "mysql"] :required? true :prompt :select}
