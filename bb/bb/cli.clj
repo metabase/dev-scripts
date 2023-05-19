@@ -6,7 +6,9 @@
             [clojure.string :as str]))
 
 (defn tbl [x]
-  (t/table x :fields [:short :long :msg :default :options :id :prompt] :style :unicode-3d))
+  (t/table x
+    :fields [:short :long :msg :default :options :id :prompt]
+    :style :unicode-3d))
 
 (defn- ->cli-tools-option [{:keys [msg short long id default parse-fn update-fn validate] :as opt}]
   (vec (concat [short long msg]
@@ -21,7 +23,17 @@
             (get (set args) "--help"))
     (println (c/green (str "  " (:doc current-task))))
     (if (seq options)
-      (do (doseq [opt options] (println) (println (c/cyan (str " " (:short opt) " " (:long opt) " " (:msg opt)))) (tbl (dissoc opt :short :long :msg)))
+      (do (doseq [opt options]
+            (println (c/cyan (str " " (:short opt) " " (:long opt) " " (:msg opt))))
+            (let [table (-> opt
+                          (dissoc :id :short :long :msg :parse-fn)
+                          ((fn [m] (if (delay? (:choices m))
+                                    (-> m
+                                      (assoc :choices (:choices-doc m ""))
+                                      (dissoc :choices-doc))
+                                    m)))
+                          not-empty)]
+              (when table (println (str/join \newline (drop 3 (str/split-lines (with-out-str (tbl table)))))))))
           (when-let [examples (:examples current-task)]
             (println "\n\nExamples:")
             (doseq [[cmd effect] examples]

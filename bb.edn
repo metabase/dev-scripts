@@ -24,9 +24,9 @@
                                                           (println (c/white "export MB_DIR=path/to/metabase"))
                                                           (System/exit 1)))))]
                   (cli/menu! (current-task)
-                             {:id :branch :msg "What branch should we run?" :short "-b" :long "--branch BRANCH" :choices list-branches :prompt :select}
-                             {:id :port :msg "What port should we run it on?" :short "-p" :long "--port PORT" :prompt :number :default 3337}
-                             {:id :socket-repl :msg "What port shall we open a socket repl on?" :short "-s" :long "--socket-repl SOCKETPORT"}))))}
+                    {:id :branch :msg "What branch should we run?" :short "-b" :long "--branch BRANCH" :choices list-branches :choices-doc "list of branches" :prompt :select}
+                    {:id :port :msg "What port should we run it on?" :short "-p" :long "--port PORT" :prompt :number :default 3337}
+                    {:id :socket-repl :msg "What port shall we open a socket repl on?" :short "-s" :long "--socket-repl SOCKETPORT"}))))}
 
          check-branch
          {:requires [[bb.dl-and-run :as dl]]
@@ -35,22 +35,23 @@
           :task
           (do (dl/check-gh-token!)
               (let [branch-info (cli/menu! (current-task)
-                                           {:id :branch
-                                            :msg "What branch should we check?"
-                                            :short "-b"
-                                            :long "--branch BRANCH"
-                                            :choices (delay (t/list-branches (t/mb-env)))
-                                            :prompt :select}
-                                           {:id :watch?
-                                            :msg "Watch until success?"
-                                            :short "-w"
-                                            :long "--watch"})]
+                                  {:id :branch
+                                   :msg "What branch should we check?"
+                                   :short "-b"
+                                   :long "--branch BRANCH"
+                                   :choices (delay (t/list-branches (t/mb-env)))
+                                   :choices-doc "list of branches"
+                                   :prompt :select}
+                                  {:id :watch?
+                                   :msg "Watch until success?"
+                                   :short "-w"
+                                   :long "--watch"})]
                 (if (:watch? branch-info)
                   (loop []
                     (let [check (dl/checks-for-branch branch-info)]
                       (println (str "\n----------[ "
-                                    (.format (java.text.SimpleDateFormat. "hh:mm:ss a") (java.util.Date.))
-                                    " ]"))
+                                 (.format (java.text.SimpleDateFormat. "hh:mm:ss a") (java.util.Date.))
+                                 " ]"))
                       (doseq [[s c] check]
                         (println (dl/pretty s) s (str "(" c ") ")))
                       (when-not (= (keys check) [:success])
@@ -60,24 +61,15 @@
                     (println (dl/pretty s) s (str "(" c ") "))))))}
 
          metabuild
-         {:doc "Starts metabase locally in dev mode."
+         {:doc "Starts metabase locally in dev mode. Set FORCE_MB_DB_CONNECTION_URI to override connection string building"
           :requires [[bb.meta :as meta]]
           :task (let [{:keys [app-db user-name password extensions] :as p}
                       (cli/menu! (current-task)
-                                 {:id :app-db
-                                  :title "Which DB should we use for metabase's data?"
-                                  :choices ["postgres" "h2" "mysql"]
-                                  :required? true
-                                  :short "-d"
-                                  :long "--database DB"
-                                  :prompt :select}
-                                 {:id :user-name :short "-u" :long "--username USER" :default (t/whoami)}
-                                 {:id :password :short "-p" :long "--pw PW" :default "password"}
-                                 {:id :extensions
-                                  :short "-e"
-                                  :long "--exensions EXT"
-                                  :default ["dev" "ee" "ee-dev" "drivers" "drivers-dev" "cider/nrepl"]
-                                  :prompt :multi})]
+                        {:id :app-db :short "-d" :long "--database-type DB" :title "Which DB should we use for metabase's data?" :choices ["postgres" "h2" "mysql"] :required? true :prompt :select}
+                        {:id :user-name :short "-u" :long "--username USER" :default (t/whoami)}
+                        {:id :password :short "-p" :long "--pw PW" :default "password"}
+                        {:id :extensions :short "-e" :long "--exensions EXT" :default ["dev" "ee" "ee-dev" "drivers" "drivers-dev" "cider/nrepl"] :prompt :multi}
+                        {:id :db-name :short "-n" :long "--name DB_NAME" :default "metabase" :required? true :title "Name of the database to connect to." :prompt :text})]
                   ;; (prn p)
                   (meta/build app-db user-name password extensions))}
 
@@ -85,12 +77,13 @@
                      :requires [[bb.quick-test :as qt]]
                      :task (qt/go!
                              (:test-namespaces (cli/menu! (current-task)
-                                                          {:id :test-namespaces
-                                                           :msg "What namespace(s) to test?"
-                                                           :long "--ns NS"
-                                                           :required? true
-                                                           :prompt :multi
-                                                           :choices (delay (qt/test-nss))})))}
+                                                 {:id :test-namespaces
+                                                  :msg "What namespace(s) to test?"
+                                                  :long "--ns NS"
+                                                  :required? true
+                                                  :prompt :multi
+                                                  :choices (delay (qt/test-nss))
+                                                  :choices-doc "a list of clojure test namespaces"})))}
 
          install-autotab {:doc "Prints shell code to autocomplete tasks using bb.
                         Note: for fish shell please make sure ~/.config/fish/completions exists."
@@ -99,11 +92,11 @@
                                      ["bb install-autotab --shell fish >> ~/.config/fish/completions/bb.fish" "Fish ^"]]
                           :task (let [{:keys [shell-type] :as x}
                                       (cli/menu! (current-task)
-                                                 {:id :shell-type
-                                                  :long "--shell SHELL"
-                                                  :required? true
-                                                  :title "What kind of shell?"
-                                                  :choices ["zsh" "bash" "fish"]
-                                                  :prompt :select})]
+                                        {:id :shell-type
+                                         :long "--shell SHELL"
+                                         :required? true
+                                         :title "What kind of shell?"
+                                         :choices ["zsh" "bash" "fish"]
+                                         :prompt :select})]
                                   (println (str "\n# --- bb autocomplete follows ---\n"
-                                                (slurp (str "./bb/" shell-type "_completion.sh")))))}}}
+                                             (slurp (str "./bb/" shell-type "_completion.sh")))))}}}

@@ -22,16 +22,18 @@
     (println (c/green "[bb metabuild] ✅ Done."))))
 
 (defn build [app-db user-name password extensions]
-  (let [env+ (assoc (t/env) "MB_DB_CONNECTION_URI" (case app-db
-                                                     "postgres" (str "postgres://" user-name ":" password "@localhost:5432/metabase")
-                                                     "mysql" (str "mysql://" user-name ":" password "@localhost:3306/metabase")
-                                                     "h2" "" ))
+  (let [env+ (assoc (t/env) "MB_DB_CONNECTION_URI"
+               (or (t/env "FORCE_MB_DB_CONNECTION_URI")
+                 (case app-db
+                   "postgres" (str "postgres://" user-name ":" password "@localhost:5432/metabase")
+                   "mysql" (str "mysql://" user-name ":" password "@localhost:3306/metabase_test")
+                   "h2" "" )))
         cmd (str "clj -M" (str/join (map (fn [s-or-kw] (keyword (name s-or-kw))) extensions)))]
     (println (:out (shell {:out :string} "java -version")))
     (t/print-env "mb" env+)
-    (println (c/green "\n--- Starting metabase with: -----\n"))
+    (println (c/green "\n  ==== Starting Metabase with: ====  \n"))
     (println (c/green cmd))
-    (println (c/green "\n---------------------------------\n"))
-    (c/magenta "In directory: " (t/env "MB_DIR"))
+    (println (c/green "\n  =================================  \n"))
+    (println (c/magenta "In directory: " (t/env "MB_DIR")))
     (future (listen-for-nrepl-and-init!))
     (shell {:extra-env env+ :dir (t/env "MB_DIR")} cmd)))
