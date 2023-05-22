@@ -23,7 +23,7 @@
 
 (defn build [app-db user-name password extensions]
   (let [env+ (assoc (t/env) "MB_DB_CONNECTION_URI"
-               (or (t/env "FORCE_MB_DB_CONNECTION_URI")
+               (or (t/env "FORCE_MB_DB_CONNECTION_URI" (constantly true))
                  (case app-db
                    "postgres" (str "postgres://" user-name ":" password "@localhost:5432/metabase")
                    "mysql" (str "mysql://" user-name ":" password "@localhost:3306/metabase_test")
