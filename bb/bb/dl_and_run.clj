@@ -76,6 +76,7 @@
            (println (c/white "Access tokens require") (c/cyan "repo scope") (c/white "for private repositories and") (c/cyan "public_repo scope")  (c/white "for public repositories."))
            (println "More info at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token")
            (println "You can make one (classic) here: https://github.com/settings/tokens")
+           (println (c/bold "Be sure to tick the *repo* permission."))
            (System/exit 1))))
 
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
