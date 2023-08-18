@@ -2,13 +2,12 @@
 
 set -euo pipefail
 
-echo "Removing existing container..."
+SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
+source "$SOURCE_DIR/common.sh"
 
 CONTAINER_NAME=oracle-21.3
 
-docker kill $CONTAINER_NAME 2>/dev/null || echo "Nothing to kill"
-
-docker rm $CONTAINER_NAME 2>/dev/null || echo "Nothing to remove"
+kill-existing $CONTAINER_NAME
 
 docker run -p 1521:1521 -p 2484:2484 \
        --name $CONTAINER_NAME \
