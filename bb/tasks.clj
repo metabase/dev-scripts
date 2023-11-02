@@ -35,7 +35,7 @@
 
 (defn list-branches [mb-dir]
   (git-fetch mb-dir)
-  (letfn [(remove-origin [b] (str/replace (str/trim b) (re-pattern "^origin/") ""))]
+  (let [remove-origin (fn remove-origin [b] (str/replace (str/trim b) (re-pattern "^origin/") ""))]
     (mapv remove-origin
           (str/split-lines
             (->> "git branch -r" (shell {:dir mb-dir :out :string}) :out)))))

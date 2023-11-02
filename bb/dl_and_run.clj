@@ -1,19 +1,18 @@
 (ns bb.dl-and-run
-  (:require [babashka.tasks :refer [shell]]
-            [babashka.curl :as curl]
-            [bask.colors :as c]
-            [bb.tasks :as t]
-            [selmer.parser :refer [<<]]
-            [cheshire.core :as json]
-            [clojure.edn :as edn]))
+  (:require
+   [babashka.curl :as curl]
+   [babashka.tasks :refer [shell]]
+   [bask.colors :as c]
+   [bb.tasks :as t]
+   [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [selmer.parser :refer [<<]]))
 
 (defn- keep-first
   "like (fn [f coll] (first (keep f coll))) but does not do chunking."
   [f coll]
-  (reduce (fn [_ element]
-            (when-let [resp (f element)] (reduced resp)))
-          nil
-          coll))
+  (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp))) nil coll))
 
 (defn- gh-get [url]
   (try (-> url
@@ -79,14 +78,15 @@
            (println (c/bold "Be sure to tick the *repo* permission."))
            (System/exit 1))))
 
-(defn download-and-run-latest-jar! [{:keys [branch port socket-repl]}]
+(defn download-latest-jar! [{:keys [branch]}]
   (let [finished (t/wait (str "Finding uberjar for branch" (c/green branch)) "📞")
         {artifact-id :id
          created-at :created_at
          dl-url :archive_download_url
          sha :head_sha
-         :as info} (branch->latest-artifact branch)
-        branch-dir (str download-dir branch)]
+         :as info_} (branch->latest-artifact branch)
+        branch-dir (str download-dir branch)
+        info (into (sorted-map) (assoc info_ :branch branch :branch-dir branch-dir))]
     (finished)
     (println (c/cyan "Found latest artifact!"))
     (println (c/magenta (str "      git SHA: " (c/green sha))))
@@ -99,6 +99,7 @@
     ;; - _or_ use the older artifact?
     (println (c/magenta (str " Download Url: " (c/green dl-url))))
     (prn info)
+    (println "Download directory: " branch-dir)
     (shell (str "mkdir -p " branch-dir))
     (if (= (try (edn/read-string (slurp (str branch-dir "/info.edn")))
                 (catch Throwable _ ::nothing-there))
@@ -109,6 +110,10 @@
         (download-mb-jar! branch-dir dl-url)))
     (println "Artifact download complete.")
     (spit (str branch-dir "/info.edn") info)
+    info))
+
+(defn run-jar! [info port socket-repl]
+  (let [{:keys [branch branch-dir]} info]
     (println "Unzipping artifact...")
     (try
       (shell {:dir branch-dir :out nil} "unzip -o metabase.zip")
@@ -133,13 +138,17 @@
       (t/print-env "mb" env+)
       (shell {:dir branch-dir :out :inherit :env env+} cmd))))
 
+(defn download-and-run-latest-jar! [{:keys [branch port socket-repl] :as args}]
+  (let [info (download-latest-jar! args)]
+    (run-jar! info port socket-repl)))
+
 (def pretty {:success "✅"
              :skipped "⏭️ "
-             :cancelled "⏹️ "
+             :cancelled "⏹️"
              :in-progress "🔄"
              :failure "❌"})
 
-(defn checks-for-branch [{branch :branch}]
+(defn checks-for-branch [branch]
   ;; note: this is a ref, so it can e.g. also be a sha.
   (->> (str "https://api.github.com/repos/metabase/metabase/commits/" branch "/check-runs")
        gh-get

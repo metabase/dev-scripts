@@ -41,9 +41,9 @@
       (println (c/cyan " accepts no command line arguments.")))
     (System/exit 0)))
 
-(defn ->ask [{:keys [id msg prompt choices] :as _option}]
+(defn ->ask [{:keys [id title prompt choices] :as _option}]
   {:id id
-   :msg msg
+   :msg title
    :type prompt
    :choices (if (delay? choices) @choices choices)})
 
@@ -73,8 +73,10 @@
             (System/exit 1))
         asked-opts (into {} (for [hybrid-option missing-and-askable]
                               (println "todo: ask (menu-ask hybrid-option)" (pr-str hybrid-option))))
-        cli (assoc (merge parsed-opts asked-opts) :args arguments)]
-    (ask-unknown! cli opts)))
+        cli (assoc (merge parsed-opts asked-opts) :args arguments)
+        out (ask-unknown! cli opts)]
+    (println out)
+    out))
 
 (defn add-parsing-for-multi [option]
   (if (= :multi (:prompt option))
