@@ -69,7 +69,7 @@
 
          watch-ci
          {:requires [[bb.dl-and-run :as dl]
-                     [clojure.pprint :as pp]]
+                     [bb.watch-ci :as watch-ci]]
           :doc "Watch the CI status for a branch until it passes."
           :examples [["bb watch-ci --branch current" "Check currently checked out branch in MB_DIR repo"]]
           :task
@@ -79,7 +79,7 @@
                                                  :msg "What branch should we check?"
                                                  :short "-b"
                                                  :long "--branch BRANCH"
-                                                 :choices (delay (t/list-branches (t/mb-env)))
+                                                 :choices (delay (t/list-branches (t/mb-dir)))
                                                  :choices-doc "list of branches"
                                                  :prompt :select})
                     branch (if (= "current" branch)
@@ -87,7 +87,7 @@
                                (do (println (c/green (c/bold "Using current branch: " (t/current-branch))))
                                    current))
                              branch)]
-                (bb.watch-ci/branch branch)))}
+                (watch-ci/branch branch)))}
 
          install-autotab {:doc "Prints shell code to autocomplete tasks using bb.
                         Note: for fish shell please make sure ~/.config/fish/completions exists."

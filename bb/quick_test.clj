@@ -6,12 +6,12 @@
    [bb.tasks :as t]
    [clojure.string :as str]))
 
-(defn- test-path [] (str (t/mb-env) "/test"))
+(defn- test-path [] (str (t/mb-dir) "/test"))
 
 (defn- file->ns [path]
   (-> path
       str
-      (str/replace (str (t/mb-env) "/test/") "")
+      (str/replace (str (t/mb-dir) "/test/") "")
       (str/replace #"\.clj$" "")
       (str/replace "_" "-")
       (str/replace "/" ".")))

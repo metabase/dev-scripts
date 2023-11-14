@@ -1,11 +1,6 @@
 (ns bb.watch-ci
-  (:require [babashka.process :refer [shell]]
-            [bask.colors :as c]
-            [bb.cli :as cli]
-            [bb.tasks :as t]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [bb.dl-and-run :as dl]
-            [clojure.pprint :as pp]
             [table.core :as table]))
 
 (defn checks-for-branch [branch]
