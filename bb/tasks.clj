@@ -61,7 +61,7 @@
        (print (c/white "="))
        (println (c/cyan value))))))
 
-(defn mb-env []
+(defn mb-dir []
   (env "MB_DIR" (fn []
                   (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
                   (println (c/white "export MB_DIR=path/to/metabase"))
@@ -99,3 +99,10 @@
         _ (bencode/write-bencode out {"op" "eval" "code" expr})
         bytes (get (bencode/read-bencode in) "value")]
     (String. bytes)))
+
+(defn current-branch
+  "Returns current metabase repo branch, as given by MB_DIR"
+  []
+  (str/trim
+    (:out (shell {:dir (mb-dir) :out :string}
+                 "git rev-parse --abbrev-ref HEAD"))))
