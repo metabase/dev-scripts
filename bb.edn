@@ -69,7 +69,7 @@
 
          watch-ci
          {:requires [[bb.dl-and-run :as dl]
-                     [clojure.pprint :as pp]]
+                     [bb.watch-ci :as watch-ci]]
           :doc "Watch the CI status for a branch until it passes."
           :examples [["bb watch-ci --branch current" "Check currently checked out branch in MB_DIR repo"]]
           :task
@@ -79,25 +79,15 @@
                                                  :msg "What branch should we check?"
                                                  :short "-b"
                                                  :long "--branch BRANCH"
-                                                 :choices (delay (t/list-branches (t/mb-env)))
+                                                 :choices (delay (t/list-branches (t/mb-dir)))
                                                  :choices-doc "list of branches"
                                                  :prompt :select})
                     branch (if (= "current" branch)
-                             (let [current (str/trim
-                                             (:out (shell {:dir (t/env "MB_DIR" (fn []
-                                                                                  (println "Please set MB_DIR to your metabase repo!")
-                                                                                  (System/exit 1))) :out :string}
-                                                          "git rev-parse --abbrev-ref HEAD")))]
-                               (do (println (c/green (c/bold "Checking current branch: " current)))
+                             (let [current (t/current-branch)]
+                               (do (println (c/green (c/bold "Using current branch: " (t/current-branch))))
                                    current))
                              branch)]
-                (pp/pprint dl/pretty)
-                (loop []
-                  (let [check (dl/checks-for-branch branch)]
-                    (print (str "\n[ " (.format (java.text.SimpleDateFormat. "hh:mm:ss a") (java.util.Date.)) " ]"))
-                    (doseq [[status count] check] (print (str/join (repeat count (dl/pretty status)))) (print "|")) (flush)
-                    (when-not (= (keys check) [:success])
-                      (Thread/sleep 10000) (recur))))))}
+                (watch-ci/branch branch)))}
 
          install-autotab {:doc "Prints shell code to autocomplete tasks using bb.
                         Note: for fish shell please make sure ~/.config/fish/completions exists."

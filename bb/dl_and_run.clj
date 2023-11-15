@@ -6,7 +6,6 @@
    [bb.tasks :as t]
    [cheshire.core :as json]
    [clojure.edn :as edn]
-   [clojure.string :as str]
    [selmer.parser :refer [<<]]))
 
 (defn- keep-first
@@ -14,7 +13,7 @@
   [f coll]
   (reduce (fn [_ element] (when-let [resp (f element)] (reduced resp))) nil coll))
 
-(defn- gh-get [url]
+(defn gh-get [url]
   (try (-> url
            (curl/get {:headers {"Accept" "application/vnd.github+json"
                                 "Authorization" (str "Bearer " (t/env "GH_TOKEN"))}})
@@ -141,20 +140,3 @@
 (defn download-and-run-latest-jar! [{:keys [branch port socket-repl] :as args}]
   (let [info (download-latest-jar! args)]
     (run-jar! info port socket-repl)))
-
-(def pretty {:success "✅"
-             :skipped "⏭️ "
-             :cancelled "⏹️"
-             :in-progress "🔄"
-             :failure "❌"})
-
-(defn checks-for-branch [branch]
-  ;; note: this is a ref, so it can e.g. also be a sha.
-  (->> (str "https://api.github.com/repos/metabase/metabase/commits/" branch "/check-runs")
-       gh-get
-       :check_runs
-       (mapv :conclusion)
-       (mapv (fn [x] (if (nil? x) :in-progress (keyword x))))
-       frequencies
-       (sort-by first)
-       reverse))
