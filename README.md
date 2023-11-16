@@ -29,7 +29,26 @@ You'll need two environment variables set to use `bb run-branch`.
 for help with a task, use `-h` or `--help`.
 
     bb run-branch --help
-    
+
+#### Using metabuild with vscode
+
+To start repl that you can connect to from Visual Studio Code you can use following alias instead of the default `:nrepl`.
+
+`~/.clojure/deps.edn`
+```
+{:aliases
+ {:vsc {:extra-deps {nrepl/nrepl {:mvn/version,"1.0.0"}
+                     cider/cider-nrepl {:mvn/version,"0.28.5"}}
+        :main-opts ["-m" "nrepl.cmdline"
+                    "--middleware" "[cider.nrepl/cider-middleware]"]}}}
+```
+
+Your startup command could then look as following:
+`bb metabuild -d postgres -e dev:ee:ee-dev:drivers:drivers-dev:vsc`
+
+If you are running the app db in docker container from images in this repo you need to pass in also the correct credentials, eg. `MB_JETTY_PORT=10001 MB_DIR=path/to/your/mb/repo bb --config /path/to/this/repo/bb.edn metabuild -d postgres -u metabase -p Password1234 -e dev:ee:ee-dev:drivers:drivers-dev:vsc`
+
+#### Passing 
 
 ### Database Scripts
 
