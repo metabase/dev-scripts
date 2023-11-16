@@ -21,13 +21,13 @@
     (println (c/green "[bb metabuild] 🔁 " (t/nrepl-eval nrepl-port repl-cmd)))
     (println (c/green "[bb metabuild] ✅ Done."))))
 
-(defn build [app-db user-name password extensions]
+(defn build [app-db user-name password extensions db-name]
   (let [env+ (assoc (t/env)
                     "MB_DB_CONNECTION_URI"
                     (or (t/env "FORCE_MB_DB_CONNECTION_URI" (constantly false))
                         (case app-db
-                          "mysql" (str "mysql://" user-name ":" password "@localhost:3306/metabase_test")
-                          "postgres" (str "postgres://" user-name ":" password "@localhost:5432/metabase")
+                          "mysql" (str "mysql://" user-name ":" password "@localhost:3306/" (or db-name "metabase_test"))
+                          "postgres" (str "postgres://" user-name ":" password "@localhost:5432/" (or db-name "metabase"))
                           "h2" "" ))
                     "MB_DB_TYPE" app-db)
         cmd (str "clj -M" (str/join (map (fn [s-or-kw] (keyword (name s-or-kw))) extensions)))]

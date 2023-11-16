@@ -35,7 +35,7 @@
           :examples [["FORCE_MB_DB_CONNECTION_URI=mysql://localhost:3308/metabase_test?user=root bb metabuild -d mysql"
                       "Connect to MYSQL, running against run-mariadb-latest.sh"]]
           :task (let [_ (println (c/red "Welcome to " (c/on-white (c/blue " MetaBuilder "))))
-                      {:keys [app-db user-name password extensions] :as p}
+                      {:keys [app-db user-name password extensions db-name] :as p}
                       (cli/menu! (current-task)
                                  {:id :app-db
                                   :short "-d"
@@ -45,7 +45,7 @@
                                   :prompt :select}
                                  {:id :user-name :short "-u" :long "--username USER" :default (t/whoami)}
                                  {:id :password :short "-p" :long "--pw PW" :default "password"}
-                                 {:id :extensions :short "-e" :long "--extensions EXT" :default ["dev" "ee" "ee-dev" "drivers" "drivers-dev" "cider/nrepl"] :prompt :multi}
+                                 {:id :extensions :short "-e" :long "--extensions EXT" :default ["dev" "ee" "ee-dev" "drivers" "drivers-dev" "nrepl"] :prompt :multi}
                                  {:id :db-name
                                   :short "-n"
                                   :long "--name DB_NAME"
@@ -53,7 +53,7 @@
                                   :title "Name of the database to connect to."
                                   :prompt :text})]
                   ;; (prn p)
-                  (meta/build app-db user-name password extensions))}
+                  (meta/build app-db user-name password extensions db-name))}
 
          quick-test
          {:doc "Quickly run a test against a namespace."
