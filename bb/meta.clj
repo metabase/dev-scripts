@@ -21,14 +21,21 @@
     (println (c/green "[bb metabuild] 🔁 " (t/nrepl-eval nrepl-port repl-cmd)))
     (println (c/green "[bb metabuild] ✅ Done."))))
 
-(defn build [app-db user-name password extensions db-name]
+(defn app-db-connection-str [app-db user-name password db-name db-port]
+  (if (= "h2" app-db)
+    ""
+    (let [;; scheme = mysql or postgres
+          scheme app-db
+          password-part (when (seq password) (str ":" password))
+          db-port (or db-port (case app-db "mysql" 3306 "postgres" 5432))
+          db-name (or db-name (case app-db "mysql" "metabase_test" "postgres" "metabase"))]
+      (str scheme "://" user-name password-part "@localhost:" db-port "/" db-name))))
+
+(defn build [app-db user-name password extensions db-name db-port]
   (let [env+ (assoc (t/env)
                     "MB_DB_CONNECTION_URI"
                     (or (t/env "FORCE_MB_DB_CONNECTION_URI" (constantly false))
-                        (case app-db
-                          "mysql" (str "mysql://" user-name ":" password "@localhost:3306/" (or db-name "metabase_test"))
-                          "postgres" (str "postgres://" user-name ":" password "@localhost:5432/" (or db-name "metabase"))
-                          "h2" "" ))
+                        (app-db-connection-str app-db user-name password db-name db-port))
                     "MB_DB_TYPE" app-db)
         cmd (str "clj -M" (str/join (map (fn [s-or-kw] (keyword (name s-or-kw))) extensions)))]
     (println (:out (shell {:out :string} "java -version")))

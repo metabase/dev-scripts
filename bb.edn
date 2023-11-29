@@ -35,7 +35,7 @@
           :examples [["FORCE_MB_DB_CONNECTION_URI=mysql://localhost:3308/metabase_test?user=root bb metabuild -d mysql"
                       "Connect to MYSQL, running against run-mariadb-latest.sh"]]
           :task (let [_ (println (c/red "Welcome to " (c/on-white (c/blue " MetaBuilder "))))
-                      {:keys [app-db user-name password extensions db-name] :as p}
+                      {:keys [app-db user-name password extensions db-name db-port] :as p}
                       (cli/menu! (current-task)
                                  {:id :app-db
                                   :short "-d"
@@ -51,9 +51,11 @@
                                   :long "--name DB_NAME"
                                   :default "metabase"
                                   :title "Name of the database to connect to."
-                                  :prompt :text})]
+                                  :prompt :text}
+                                 ;; `nil` port signals intent to use default port number for a database type
+                                 {:id :db-port :title "Port the database is running on" :long "--port NUMBER" :default nil})]
                   ;; (prn p)
-                  (meta/build app-db user-name password extensions db-name))}
+                  (meta/build app-db user-name password extensions db-name db-port))}
 
          quick-test
          {:doc "Quickly run a test against a namespace."
