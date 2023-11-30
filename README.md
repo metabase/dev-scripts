@@ -95,8 +95,7 @@ Rather than use Docker, you can run Presto with Postgres with the following step
   ```
 - Start the presto server with `/usr/local/opt/prestodb/bin/presto-server run`
 
-Alternatively, Luis has created a [Link](https://github.com/paoliniluis/metabase-presto-and-trino) for testing Presto
-and Trino with Docker that might work too.
+Alternatively, Luis has created a [Link](https://github.com/paoliniluis/metabase-presto-and-trino) for testing Presto and Trino with Docker that might work too.
 
 # Automated setup
 
