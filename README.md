@@ -48,7 +48,7 @@ Your startup command could then look as following:
 
 If you are running the app db in docker container from images in this repo you need to pass in also the correct credentials, eg. `MB_JETTY_PORT=10001 MB_DIR=path/to/your/mb/repo bb --config /path/to/this/repo/bb.edn metabuild -d postgres -u metabase -p Password1234 -e dev:ee:ee-dev:drivers:drivers-dev:vsc`
 
-#### Passing 
+#### Passing
 
 ### Database Scripts
 
@@ -79,6 +79,23 @@ The work around is using colima:
 1. [Install](https://github.com/abiosoft/colima#getting-started) colima
 2. Start it with `colima start --arch x86_64 --memory 4`
 3. Start the database with scripts like normal
+
+#### Presto on Macbook with ARM chips
+
+Rather than use Docker, you can run Presto with Postgres with the following steps:
+- Follow [these
+  steps](https://prestodb.io/docs/current/installation/deploy-brew.html#deploy-presto-on-an-apple-silicon-mac-using-homebrew)
+  to install presto using homebrew
+- Add a properties file for postgresql in `/usr/local/Cellar/prestodb/<version>/libexec/etc/catalog`, called `postgresql.properties` with the following contents:
+  ```
+  connector.name=postgresql
+  connection-url=jdbc:postgresql://localhost:5432/test-data
+  connection-user=<mb-postgresql-test-user>
+  connection-password=<mb-postgresql-test-password>
+  ```
+- Start the presto server with `/usr/local/opt/prestodb/bin/presto-server run`
+
+Alternatively, Luis has created a [Link](https://github.com/paoliniluis/metabase-presto-and-trino) for testing Presto and Trino with Docker that might work too.
 
 # Automated setup
 
