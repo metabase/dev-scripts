@@ -86,7 +86,7 @@ Rather than use Docker, you can run Presto with Postgres with the following step
 - Follow [these
   steps](https://prestodb.io/docs/current/installation/deploy-brew.html#deploy-presto-on-an-apple-silicon-mac-using-homebrew)
   to install presto using homebrew
-- Add a properties file for postgresql, `postgresql.properties` with the following contents:
+- Add a properties file for postgresql in `/usr/local/Cellar/prestodb/<version>/libexec/etc/catalog`, called `postgresql.properties` with the following contents:
   ```
   connector.name=postgresql
   connection-url=jdbc:postgresql://localhost:5432/test-data
