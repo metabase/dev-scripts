@@ -9,26 +9,6 @@
                     [bb.tasks :as t]
                     [clojure.string :as str]]
 
-         run-branch
-         {:requires [[bb.dl-and-run :as dl]]
-          :doc "Download and run a jar for a branch, on a port. Respects MB_DB_CONNECTION_URI."
-          :examples [["bb run-branch --branch master --port 4445" "Run master branch on port 4445"]
-                     ["bb run-branch"                             "Pick branch and port, and run branch on port"]
-                     ["bb run-branch -p 9939 -s 9938"             "Pick a branch, and run it on port 4445 with a socket repl on 9938"]]
-          :task
-          (do (dl/check-gh-token!)
-              (dl/download-and-run-latest-jar!
-                (let [list-branches (delay ;; choices can be a delay -- we dont want to grab theese unless we need them.
-                                      (t/list-branches
-                                        (t/env "MB_DIR" (fn []
-                                                          (println (c/red "Please put the path of your metabase repository into the MB_DIR env variable like so:"))
-                                                          (println (c/white "export MB_DIR=path/to/metabase"))
-                                                          (System/exit 1)))))]
-                  (cli/menu! (current-task)
-                    {:id :branch :msg "What branch should we run?" :short "-b" :long "--branch BRANCH" :choices list-branches :choices-doc "list of branches" :prompt :select}
-                    {:id :port :msg "What port should we run it on?" :short "-p" :long "--port PORT" :prompt :number :default 3337}
-                    {:id :socket-repl :msg "What port shall we open a socket repl on?" :short "-s" :long "--socket-repl SOCKETPORT"}))))}
-
          metabuild
          {:doc "Starts metabase locally in dev mode. Set FORCE_MB_DB_CONNECTION_URI to override connection string building"
           :requires [[bb.meta :as meta]]
@@ -68,26 +48,21 @@
                                                 :choices-doc "a list of clojure test namespaces"})))}
 
          watch-ci
-         {:requires [[bb.dl-and-run :as dl]
-                     [bb.watch-ci :as watch-ci]]
-          :doc "Watch the CI status for a branch until it passes."
-          :examples [["bb watch-ci --branch current" "Check currently checked out branch in MB_DIR repo"]]
-          :task
-          (do (dl/check-gh-token!)
-              (let [{:keys [branch]} (cli/menu! (current-task)
-                                                {:id :branch
-                                                 :msg "What branch should we check?"
-                                                 :short "-b"
-                                                 :long "--branch BRANCH"
-                                                 :choices (delay (t/list-branches (t/mb-dir)))
-                                                 :choices-doc "list of branches"
-                                                 :prompt :select})
-                    branch (if (= "current" branch)
-                             (let [current (t/current-branch)]
-                               (do (println (c/green (c/bold "Using current branch: " (t/current-branch))))
-                                   current))
-                             branch)]
-                (watch-ci/branch branch)))}
+         {:doc "Prints the command to watch your CI build for a specific branch."
+          :task (println
+                  (str/join "\n" ["To watch your branch, cd to metabase, switch to your branch, and run:"
+                                  ""
+                                  "gh pr checks --watch --required && say done"
+                                  ""]))}
+
+         github-bookmarklet
+         {:doc "Print info about Tim's Amazing Github Bookmarklet."
+          :task (println
+                  (str/join "\n"
+                            ["Save this as a bookmarklet, and click it on a github page to remove passing tests:"
+                             ""
+                             "javascript:%20document.querySelectorAll(%22.merge-status-item%20.octicon-check,.octicon-skip%22).forEach((el)%20=%3E%20el.parentElement.parentElement.remove())"
+                             ""]))}
 
          install-autotab {:doc "Prints shell code to autocomplete tasks using bb.
                         Note: for fish shell please make sure ~/.config/fish/completions exists."
