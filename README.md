@@ -2,8 +2,6 @@ Scripts that make local Metabase development handier. Currently these only consi
 databases we support like MySQL or Spark SQL locally, but we can add scripts for other stuff in the future if we think
 of anything good.
 
-Please feel free to collaborate and improve these scripts or add new ones!
-
 ### bb tasks
 
 To get setup you'll need:
@@ -15,14 +13,9 @@ To see a list of avaliable tasks, run:
 
     bb tasks
 
-#### setup for `run-branch`
-
-You'll need two environment variables set to use `bb run-branch`.
+#### Setup MB_DIR
 
     MB_DIR=/path/to/metabase
-    GH_TOKEN=ghp_asdasdasdasdasdasdasdasdasd
-
-`GH_TOKEN` needs to be a classic can be obtained from: [https://github.com/settings/tokens](https://github.com/settings/tokens). Be sure to tick the *repo* permission.
 
 #### How to get help
 
