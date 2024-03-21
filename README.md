@@ -79,13 +79,15 @@ Rather than use Docker, you can run Presto with Postgres with the following step
 - Follow [these
   steps](https://prestodb.io/docs/current/installation/deploy-brew.html#deploy-presto-on-an-apple-silicon-mac-using-homebrew)
   to install presto using homebrew
-- Add a properties file for postgresql in `/usr/local/Cellar/prestodb/<version>/libexec/etc/catalog`, called `postgresql.properties` with the following contents:
+- Add a properties file for postgresql in `/usr/local/Cellar/prestodb/<version>/libexec/etc/catalog`, called
+  `test_data.properties` (`test_data` is the catalog name) with the following contents:
   ```
   connector.name=postgresql
-  connection-url=jdbc:postgresql://localhost:5432/test-data
+  connection-url=jdbc:postgresql://localhost:5432/test_data
   connection-user=<mb-postgresql-test-user>
   connection-password=<mb-postgresql-test-password>
   ```
+- Create a database `test_data` on the postgres server that <mb-postgresql-test-user> has all privileges to
 - Start the presto server with `/usr/local/opt/prestodb/bin/presto-server run`
 
 Alternatively, Luis has created a [Link](https://github.com/paoliniluis/metabase-presto-and-trino) for testing Presto and Trino with Docker that might work too.
