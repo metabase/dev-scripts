@@ -87,7 +87,7 @@ Rather than use Docker, you can run Presto with Postgres with the following step
   connection-user=<mb-postgresql-test-user>
   connection-password=<mb-postgresql-test-password>
   ```
-- To run the presto-jdbc driver tests, you'll need to create a database `test_data` on the postgres server that <mb-postgresql-test-user> has all privileges to, and create a schema in the database "default".
+- To run the presto-jdbc driver tests, you'll need to create a database `test_data` on the postgres server that <mb-postgresql-test-user> has all privileges to, and create a schema in the database named "default".
 - Start the presto server with `/usr/local/opt/prestodb/bin/presto-server run`
 
 Alternatively, Luis has created a [Link](https://github.com/paoliniluis/metabase-presto-and-trino) for testing Presto and Trino with Docker that might work too.
