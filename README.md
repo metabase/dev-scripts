@@ -117,3 +117,17 @@ This stack is to test how Metabase behaves in HA mode, so you'll have a configur
 HAProxy is configured to balance requests in a round-robin manner and it checks the health of the application (so you can also simulate a failure)
 
 This will allow you to test how Metabase behaves when it scales horizontally, both on the FE (showing things like the process picker in the troubleshooting -> logs section) and on the backend (health checks, queues, settings, etc). All configs in the LB can be changed from the config in stacks/ha/config/haproxy.cfg
+
+# Downloading Jars
+
+`mb-download` will let you download a jar to a given path or straight into `$JARS`.
+
+``` bash
+$ ./mb-download -h
+Usage: mb-download 0.42.2
+Usage: mb-download 1.45.2
+Usage: mb-download 1.45.2 ~/path/to/my/jars
+
+protip: this script will read from $JARS, and use that as your jar directory.
+```
+
