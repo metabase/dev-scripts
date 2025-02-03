@@ -4,8 +4,8 @@ set -euo pipefail
 
 MYSQL_VERSION=latest
 CONTAINER_NAME=mb-mysql-db
-HOST_PORT="3306"
-DB_NAME="metabase_test"
+HOST_PORT=3306
+DB_NAME=metabase_test
 DB_USER=root
 
 function print-mysql-vars() {
