@@ -2,25 +2,27 @@
 
 set -euo pipefail
 
-echo "Removing existing container..."
+SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
+source "$SOURCE_DIR/common.sh"
 
-docker kill mongo-4 2>/dev/null || echo "Nothing to kill"
+CONTAINER_NAME=mongo-4
+HOST_PORT=27017
 
-docker rm -fv mongo-4 2>/dev/null || echo "Nothing to remove"
+kill-existing ${CONTAINER_NAME}
 
-docker run -p 27017:27017 \
-       --name mongo-4 \
+docker run -p ${HOST_PORT}:27017 \
+       --name ${CONTAINER_NAME} \
        --rm \
        -d circleci/mongo:4.2
 
 cat <<EOF
 
-Started MongoDB 4.2 on Port 27017.
-
-MB_MONGO_TEST_HOST=localhost MB_MONGO_TEST_PORT=27017
+Started MongoDB 4.2 on port ${HOST_PORT}.
 
 Connect to the database with the MongoDB client:
 
-docker exec -it mongo-4 mongo
+docker exec -it ${CONTAINER_NAME} mongo
 
+Environment variables to use as a data warehouse:
+MB_MONGO_TEST_HOST=localhost MB_MONGO_TEST_PORT=${HOST_PORT}
 EOF

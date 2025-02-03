@@ -1,44 +1,52 @@
 #! /usr/bin/env bash
 
+set -euo pipefail
+
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 source "$SOURCE_DIR/common.sh"
 
-set -euo pipefail
+CONTAINER_NAME=mysql-8-0
+HOST_PORT=3309
+DB_NAME=metabase_test
+DB_USER=root
 
-kill-existing mysql-8-0
+kill-existing ${CONTAINER_NAME}
 
-docker run -p 3309:3306 \
-       -e MYSQL_DATABASE=metabase_test \
+docker run -p ${HOST_PORT}:3306 \
+       -e MYSQL_DATABASE=${DB_NAME} \
        -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-       --name mysql-8-0 \
+       --name ${CONTAINER_NAME} \
        --rm \
        -d mysql:8.0
 
 cat <<EOF
-Started MySQL Latest on port 3309.
-
-JDBC URL: jdbc:mysql://localhost:3309/metabase_test?user=root
-
-env vars: MB_DB_TYPE=mysql MB_DB_DBNAME=metabase_test MB_DB_HOST=localhost MB_DB_PASS='' MB_DB_PORT=3309 MB_DB_USER=root MB_MYSQL_TEST_USER=root
+Started MySQL 8.0 on port ${HOST_PORT}.
 
 Clojure CLI:
 
-clj -J-Dmb.db-type=mysql -J-Dmb.db-port=3309 -J-Dmb.db.dbname=metabase_test -J-Dmb.db.user=root -J-Dmb.db.pass=''
+clj -J-Dmb.db-type=mysql -J-Dmb.db-port=${HOST_PORT} -J-Dmb.db.dbname=${DB_NAME} -J-Dmb.db.user=${DB_USER} -J-Dmb.db.pass=''
 
 or add a profile for it to your ~/.clojure/deps.edn:
 
 {:profiles
- {:user/mysql-8-0
+ {:user/${CONTAINER_NAME}
   {:jvm-opts
    ["-Dmb.db-type=mysql"
-    "-Dmb.db-port=3309"
-    "-Dmb.db.dbname=metabase_test"
-    "-Dmb.db.user=root"
+    "-Dmb.db-port=${HOST_PORT}"
+    "-Dmb.db.dbname=${DB_NAME}"
+    "-Dmb.db.user=${DB_USER}"
     "-Dmb.db.pass="
-    "-Dmb.mysql.test.port=3309"]}}}
+    "-Dmb.mysql.test.port=${HOST_PORT}"]}}}
 
 Connect with the MySQL CLI tool:
 
-mysql --user=root --host=127.0.0.1 --port=3309 --database=metabase_test
+mysql --user=${DB_USER} --host=127.0.0.1 --port=${HOST_PORT} --database=${DB_NAME}
 
+JDBC URL: jdbc:mysql://localhost:${HOST_PORT}/${DB_NAME}?user=${DB_USER}
+
+Environment variables for Metabase (to use as app DB):
+MB_DB_TYPE=mysql MB_DB_DBNAME=${DB_NAME} MB_DB_HOST=localhost MB_DB_PASS='' MB_DB_PORT=${HOST_PORT} MB_DB_USER=${DB_USER} MB_MYSQL_TEST_USER=${DB_USER}
+
+Environment variables to use as a data warehouse:
+MB_MYSQL_TEST_HOST=localhost MB_MYSQL_TEST_PORT=${HOST_PORT} MB_MYSQL_TEST_DB=${DB_NAME} MB_MYSQL_TEST_USER=${DB_USER} MB_MYSQL_TEST_PASSWORD=''
 EOF

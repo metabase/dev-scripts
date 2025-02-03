@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set pipefail -euo
+set -euo pipefail
 
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 source "$SOURCE_DIR/common.sh"
@@ -32,12 +32,15 @@ docker run \
 cat << EOF
 Started PostgreSQL ${PG_VERSION} port $HOST_PORT via Docker (container name: $CONTAINER_NAME). Data will be persisted in $DATA_DIR on the host machine (delete it to reset).
 
+To open a SQL client session:
+docker run -it --rm --network $DOCKER_NETWORK postgres:12 psql -h $CONTAINER_NAME -U $DB_USER
+And enter the DB user password for $DB_USER: $DB_PASSWORD
+
 JDBC URL: jdbc:postgres://localhost:$HOST_PORT/$DB_NAME?user=$DB_USER
 
 Environment variables for Metabase (to use as app DB):
 MB_DB_TYPE=postgres MB_DB_DBNAME=$DB_NAME MB_DB_HOST=localhost MB_DB_PASS=$DB_PASSWORD MB_DB_PORT=$HOST_PORT MB_DB_USER=$DB_USER MB_POSTGRES_TEST_USER=$DB_USER
 
-To open a SQL client session:
-docker run -it --rm --network $DOCKER_NETWORK postgres:12 psql -h $CONTAINER_NAME -U $DB_USER
-And enter the DB user password for $DB_USER: $DB_PASSWORD
+Environment variables to use as a data warehouse:
+MB_POSTGRESQL_TEST_HOST=localhost MB_POSTGRESQL_TEST_PORT=$HOST_PORT MB_POSTGRESQL_TEST_DB=$DB_NAME MB_POSTGRES_TEST_USER=$DB_USER MB_POSTGRESQL_TEST_PASSWORD=$DB_PASSWORD
 EOF
