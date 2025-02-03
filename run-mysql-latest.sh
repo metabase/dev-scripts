@@ -49,5 +49,4 @@ MB_DB_TYPE=mysql MB_DB_DBNAME=${DB_NAME} MB_DB_HOST=localhost MB_DB_PASS='' MB_D
 
 Environment variables to use as a data warehouse:
 MB_MYSQL_TEST_HOST=localhost MB_MYSQL_TEST_PORT=${HOST_PORT} MB_MYSQL_TEST_DB=${DB_NAME} MB_MYSQL_TEST_USER=${DB_USER} MB_MYSQL_TEST_PASSWORD=''
-
 EOF

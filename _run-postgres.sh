@@ -30,7 +30,7 @@ docker run \
        postgres:${PG_VERSION}
 
 cat << EOF
-Started PostgreSQL ${PG_VERSION} port $HOST_PORT via Docker (container name: $CONTAINER_NAME). Data will be persisted in $DATA_DIR on the host machine (delete it to reset).
+Started PostgreSQL ${PG_VERSION} on port $HOST_PORT via Docker (container name: $CONTAINER_NAME). Data will be persisted in $DATA_DIR on the host machine (delete it to reset).
 
 To open a SQL client session:
 docker run -it --rm --network $DOCKER_NETWORK postgres:12 psql -h $CONTAINER_NAME -U $DB_USER

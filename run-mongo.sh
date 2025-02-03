@@ -16,7 +16,6 @@ docker run -p ${HOST_PORT}:27017 \
        -d circleci/mongo:4.2
 
 cat <<EOF
-
 Started MongoDB 4.2 on port ${HOST_PORT}.
 
 Connect to the database with the MongoDB client:
