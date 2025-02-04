@@ -6,6 +6,9 @@ source "$SOURCE_DIR/env-postgres.sh"
 
 source "$SOURCE_DIR/common.sh"
 
+DATA_DIR=$HOME/metabase-pgsql-${PG_VERSION}-data
+DOCKER_NETWORK=psql-metabase-network
+
 kill-existing ${CONTAINER_NAME}
 create-network-if-needed $DOCKER_NETWORK
 

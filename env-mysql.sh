@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-MYSQL_VERSION=latest
 CONTAINER_NAME=mb-mysql-db
 HOST_PORT=3306
 DB_NAME=metabase_test

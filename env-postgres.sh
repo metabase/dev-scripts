@@ -2,14 +2,11 @@
 
 set -euo pipefail
 
-PG_VERSION=17
 CONTAINER_NAME=mb-postgres-db
 HOST_PORT=${PGSQL_PORT:-5432}
 DB_NAME=metabase
 DB_USER=metabase
 DB_PASSWORD=password
-DATA_DIR=$HOME/metabase-pgsql-${PG_VERSION}-data
-DOCKER_NETWORK=psql-metabase-network
 
 function print-postgres-vars() {
     cat <<EOF
