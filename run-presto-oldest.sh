@@ -2,4 +2,4 @@
 
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
-MARIADB_VERSION=latest $SOURCE_DIR/_run-mariadb.sh
+PRESTO_VERSION=0.286 $SOURCE_DIR/_run-presto.sh

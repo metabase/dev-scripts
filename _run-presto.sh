@@ -1,29 +1,28 @@
 #! /usr/bin/env bash
 
-set -euo pipefail
+SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
-echo "Removing existing container..."
+source "$SOURCE_DIR/env-presto.sh"
 
-docker rm -fv presto 2>/dev/null || echo "Nothing to remove"
+source "$SOURCE_DIR/common.sh"
 
-docker run -p 8080:8080 \
+kill-existing ${CONTAINER_NAME}
+
+docker run -p ${HOST_PORT}:8080 \
        -p 8443:8443 \
-       --name presto \
+       --name ${CONTAINER_NAME} \
        --hostname presto \
        --rm \
-       -d metabase/presto-mb-ci
-
-SERVER_CA_PEM_FILE=/tmp/presto-ssl-ca.pem
-SERVER_CA_DER_FILE=/tmp/presto-ssl-ca.der
-MODIFIED_CACERTS_FILE=/tmp/cacerts-with-presto-ssl.jks
+       -d prestodb/presto:${PRESTO_VERSION}
 
 cat << EOF
-Started Presto on port 8080 (insecure HTTP) and port 8443 (secure HTTPS) on the host machine
+
+Started Presto on port ${HOST_PORT} (insecure HTTP) and port 8443 (secure HTTPS) on the host machine
 
 To make the self signed certificate that was generated for this Presto instance available to your Java application
 (ex: Metabase), perform the following steps after Presto is completely online.  You can run
 
-  docker logs --tail 5 presto
+  docker logs --tail 5 ${CONTAINER_NAME}
 
 to see the current output.  Once Presto is online, you will see a line containing something like the following:
 
@@ -44,4 +43,7 @@ also have the JAVA_HOME env var set for this all to work.
 Finally, this can be made available to Metabase by adding the following JVM args when starting:
 
   -Djavax.net.ssl.trustStore=$MODIFIED_CACERTS_FILE -Djavax.net.ssl.trustStorePassword=changeit
+  
 EOF
+
+print-presto-vars

@@ -2,4 +2,4 @@
 
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
-MARIADB_VERSION=latest $SOURCE_DIR/_run-mariadb.sh
+SPARKSQL_VERSION=2.1.1 $SOURCE_DIR/_run-sparksql.sh
