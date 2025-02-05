@@ -43,7 +43,7 @@ also have the JAVA_HOME env var set for this all to work.
 Finally, this can be made available to Metabase by adding the following JVM args when starting:
 
   -Djavax.net.ssl.trustStore=$MODIFIED_CACERTS_FILE -Djavax.net.ssl.trustStorePassword=changeit
-  
+
 EOF
 
 print-presto-vars

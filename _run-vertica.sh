@@ -24,7 +24,7 @@ cat <<EOF
 
 Started Vertica ${VERTICA_VERSION} on port ${HOST_PORT}.
 
-JDBC URL: "jdbc:vertica://localhost:${HOST_PORT}/${DB_NAME}?user=${DB_USER}"
+JDBC URL: jdbc:vertica://localhost:${HOST_PORT}/${DB_NAME}?user=${DB_USER}
 
 EOF
 

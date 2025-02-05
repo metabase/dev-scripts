@@ -7,6 +7,7 @@ source "$SOURCE_DIR/env-druid.sh"
 source "$SOURCE_DIR/common.sh"
 
 kill-existing ${CONTAINER_NAME}
+
 docker run \
        -p ${WEB_PORT}:8081 \
        -p ${HOST_PORT}:8082 \

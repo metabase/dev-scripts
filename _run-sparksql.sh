@@ -1,7 +1,5 @@
 #! /usr/bin/env bash
 
-set -euo pipefail
-
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
 source "$SOURCE_DIR/env-sparksql.sh"
