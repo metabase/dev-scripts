@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-SQLSERVER_VERSION=2022-latest 
 CONTAINER_NAME=mb-sqlserver-db
 HOST_PORT=1433 
 DB_NAME=master 
