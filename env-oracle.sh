@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-ORACLE_VERSION=latest
 CONTAINER_NAME=mb-oracle-db
 HOST_PORT=1521
 DB_NAME=XEPDB1
