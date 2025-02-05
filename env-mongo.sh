@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-MONGO_VERSION=6
 CONTAINER_NAME=mb-mongo-db 
 HOST_PORT=27017 
 
