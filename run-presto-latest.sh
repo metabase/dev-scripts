@@ -2,4 +2,4 @@
 
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
-PG_VERSION=12 $SOURCE_DIR/_run-postgres.sh
+PRESTO_VERSION=latest $SOURCE_DIR/_run-presto.sh

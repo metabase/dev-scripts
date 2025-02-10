@@ -2,4 +2,4 @@
 
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
-MYSQL_VERSION=latest $SOURCE_DIR/_run-mysql.sh
+VERTICA_VERSION=latest $SOURCE_DIR/_run-vertica.sh

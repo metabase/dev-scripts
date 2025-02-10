@@ -2,4 +2,4 @@
 
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
-MYSQL_VERSION=latest $SOURCE_DIR/_run-mysql.sh
+DRUID_VERSION=29.0.0 $SOURCE_DIR/_run-druid.sh
