@@ -2,13 +2,13 @@
 
 set -euo pipefail
 
-item_data=$(op item get "Redshift (AWS)" --vault="Driver Development" --format=json)
+item_data=$(op item get "driver: redshift" --vault="Driver Development" --format=json)
 
-DB=dev
-HOST=$(echo ${item_data} | jq -r '.urls[] | select(.label == "host").href')
-PASSWORD=$(echo ${item_data} | jq -r '.fields[] | select(.label == "password").value')
-PORT=$(echo ${item_data} | jq -r '.urls[] | select(.label == "port").href')
-USER=$(echo ${item_data} | jq -r '.fields[] | select(.label == "username").value')
+DB=$(echo ${item_data} | jq -r '.fields[] | select(.label == "DB").value')
+HOST=$(echo ${item_data} | jq -r '.fields[] | select(.label == "HOST").value')
+PASSWORD=$(echo ${item_data} | jq -r '.fields[] | select(.label == "PASSWORD").value')
+PORT=$(echo ${item_data} | jq -r '.fields[] | select(.label == "PORT").value')
+USER=$(echo ${item_data} | jq -r '.fields[] | select(.label == "USER").value')
 
 function print-redshift-vars() {
     cat <<EOF

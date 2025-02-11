@@ -8,7 +8,7 @@ USER=$(echo ${item_data} | jq -r '.fields[] | select(.label == "USER").value')
 ACCOUNT=$(echo ${item_data} | jq -r '.fields[] | select(.label == "ACCOUNT").value')
 PASSWORD=$(echo ${item_data} | jq -r '.fields[] | select(.label == "PASSWORD").value')
 WAREHOUSE=$(echo ${item_data} | jq -r '.fields[] | select(.label == "WAREHOUSE").value')
-DB=$(echo ${item_data} | jq -r '.fields[] | select(.label == "database").value' | head -n 1)
+DB=$(echo ${item_data} | jq -r '.fields[] | select(.label == "DB").value' | head -n 1)
 PK_USER=$(echo ${item_data} | jq -r '.fields[] | select(.label == "PK_USER").value')
 PK_PRIVATE_KEY=$(echo ${item_data} | jq -r '.fields[] | select(.label == "PK_PRIVATE_KEY").value')
 
