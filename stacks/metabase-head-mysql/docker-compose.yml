@@ -1,0 +1,62 @@
+version: '3.7'
+services:
+  metabase-head:
+    # image: metabase/metabase-enterprise-head:latest
+    image: metabase/metabase-head:latest
+    container_name: metabase-head
+    hostname: metabase-head
+    volumes: 
+    - /dev/urandom:/dev/random:ro
+    ports:
+      - 3000:3000
+    networks:
+      - metanet1
+    environment: 
+      - "MB_DB_DBNAME=metabase"
+      - "MB_DB_PORT=3306"
+      - "MB_DB_USER=metabase"
+      - "MB_DB_PASS=mysecretpassword"
+      - "MB_DB_HOST=mysql-head"
+      - "MB_DB_TYPE=mysql"
+  mysql-head:
+    image: mysql:8.0.21
+    # image: mysql:5.7.32
+    container_name: mysql-head
+    hostname: mysql-head
+    ports: 
+      - 3306:3306
+    environment:
+      - "MYSQL_ROOT_PASSWORD=mysecretpassword"
+      - "MYSQL_USER=metabase"
+      - "MYSQL_PASSWORD=mysecretpassword"
+      - "MYSQL_DATABASE=metabase"
+    command: ['--default-authentication-plugin=mysql_native_password']
+    networks: 
+      - metanet1
+  sample-postgres-head:
+    image: metabase/qa-databases:postgres-sample-12
+    container_name: postgres-sample-database-head
+    hostname: postgres-sample-database-head
+    # ports: 
+    #   - 5432:5432
+    networks: 
+      - metanet1
+  sample-mysql-head:
+    image: metabase/qa-databases:mysql-sample-8
+    container_name: mysql-sample-database-head
+    hostname: mysql-sample-database-head
+    # ports: 
+    #   - 5432:5432
+    networks: 
+      - metanet1
+  sample-mongo-head:
+    image: metabase/qa-databases:mongo-sample-4.0
+    container_name: mongo-sample-database-head
+    hostname: mongo-sample-database-head
+    # ports: 
+    #   - 5432:5432
+    networks: 
+      - metanet1
+networks: 
+  metanet1:
+    driver: bridge
