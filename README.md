@@ -73,6 +73,10 @@ The work around is using colima:
 2. Start it with `colima start --arch x86_64 --memory 4`
 3. Start the database with scripts like normal
 
+##### Colima in Feb 2025
+If colima is not starting for you on m2 mac, looking into the issue https://github.com/abiosoft/colima/issues/1248
+could help.
+
 #### Presto on Macbook with ARM chips
 
 Rather than use Docker, you can run Presto with Postgres with the following steps:
