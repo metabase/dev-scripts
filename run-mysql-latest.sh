@@ -2,4 +2,4 @@
 
 SOURCE_DIR=`dirname "${BASH_SOURCE[0]}"`
 
-MYSQL_VERSION=latest $SOURCE_DIR/_run-mysql.sh
+MYSQL_BROAD_VERSION=latest MYSQL_VERSION=latest $SOURCE_DIR/_run-mysql.sh
