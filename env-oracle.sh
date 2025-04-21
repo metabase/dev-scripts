@@ -4,7 +4,7 @@ set -euo pipefail
 
 CONTAINER_NAME=mb-oracle-db
 HOST_PORT=1521
-DB_NAME=XEPDB1
+DB_NAME=$ORACLE_DB_NAME
 DB_USER=system
 DB_PASSWORD=password
 
