@@ -13,13 +13,13 @@ MODIFIED_CACERTS_FILE=/tmp/cacerts-with-presto-ssl.jks
 function print-presto-vars() {
     cat <<EOF
 Java properties:
--Dmb.presto.test.host=localhost -Dmb.presto.test.port=${HOST_PORT} -Dmb.presto.test.user=${DB_USER} -Dmb.presto.test.password=${DB_PASSWORD}
+-Dmb.presto.jdbc.test.host=localhost -Dmb.presto.jdbc.test.port=${HOST_PORT} -Dmb.presto.jdbc.test.user=${DB_USER} -Dmb.presto.jdbc.test.password=${DB_PASSWORD}
 
 Clojure pairs:
-:mb-presto-test-host "localhost" :mb-presto-test-port "${HOST_PORT}" :mb-presto-test-user "${DB_USER}" :mb-presto-test-password "${DB_PASSWORD}"
+:mb-presto-jdbc-test-host "localhost" :mb-presto-jdbc-test-port "${HOST_PORT}" :mb-presto-jdbc-test-user "${DB_USER}" :mb-presto-jdbc-test-password "${DB_PASSWORD}"
 
 Bash variables:
-MB_PRESTO_TEST_HOST=localhost MB_PRESTO_TEST_PORT=${HOST_PORT} MB_PRESTO_TEST_USER=${DB_USER} MB_PRESTO_TEST_PASSWORD=${DB_PASSWORD}
+MB_PRESTO_JDBC_TEST_HOST=localhost MB_PRESTO_JDBC_TEST_PORT=${HOST_PORT} MB_PRESTO_JDBC_TEST_USER=${DB_USER} MB_PRESTO_JDBC_TEST_PASSWORD=${DB_PASSWORD}
 EOF
 }
 
