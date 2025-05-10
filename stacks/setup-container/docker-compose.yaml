@@ -1,31 +1,56 @@
 version: '3.9'
 services:
-  metabase_setup:
-    image: metabase/metabase-enterprise:v1.42.3
-    hostname: metabase_setup
-    container_name: metabase_setup
+  metabase:
+    image: metabase/metabase:v0.43.0
+    container_name: metabase
+    hostname: metabase
+    volumes: 
+    - /dev/urandom:/dev/random:ro
     ports:
-      - 3001:3000
-    networks:
+      - 3031:3000
+    environment: 
+      - "MB_DB_TYPE=postgres"
+      - "MB_DB_DBNAME=metabase"
+      - "MB_DB_PORT=5432"
+      - "MB_DB_USER=metabase"
+      - "MB_DB_PASS=mysecretpassword"
+      - "MB_DB_HOST=postgres-app-db"
+    networks: 
+      - metanet1
+    depends_on: 
+      - postgres-app-db
+  postgres-app-db:
+    image: postgres:14.2-alpine
+    container_name: postgres-app-db
+    hostname: postgres-app-db
+    ports:
+      - 5432:5432
+    environment:
+      - "POSTGRES_USER=metabase"
+      - "POSTGRES_DB=metabase"
+      - "POSTGRES_PASSWORD=mysecretpassword"
+    volumes:
+      - $PWD/postgres_origin:/var/lib/postgresql/data
+    networks: 
       - metanet1
   setup:
     image: bash:5.1.16
     container_name: setup
+    volumes:
+      - $PWD/setup:/tmp
     networks:
       - metanet1
-    command: > 
-      sh -c "apk add curl jq && \
-        curl -L 'https://raw.githubusercontent.com/nickjj/wait-until/v0.2.0/wait-until' -o /usr/local/bin/wait-until && \
-        chmod +x /usr/local/bin/wait-until && \
-        wait-until \"echo 'Checking if Metabase is ready' && curl -s 'http://metabase_setup:3000/api/health' | grep -ioE \"ok\"\" 60 && \
-        if curl -s 'http://metabase_setup:3000/api/session/properties' | jq -r '.\"setup-token\"' | grep -ioE \"null\"; then echo 'Instance already configured, exiting'; else \
-        echo 'Setting up the instance' && \
-        token=$$(curl -s http://metabase_setup:3000/api/session/properties | jq -r '.\"setup-token\"') && \
-        echo 'Setup token fetched, now configuring with:' && \
-        echo \"{'token':'$$token','user':{'first_name':'a','last_name':'b','email':'a@b.com','site_name':'metabot1','password':'metabot1','password_confirm':'metabot1'},'database':null,'invite':null,'prefs':{'site_name':'metabot1','site_locale':'en','allow_tracking':'false'}}\" > file.json && \
-        sed 's/'\''/\"/g' file.json > file2.json && \
-        cat file2.json && \
-        curl -s http://metabase_setup:3000/api/setup -H 'Content-Type: application/json' --data-binary @file2.json && echo ' < Admin session token, exiting'; fi"
+    depends_on:
+      - metabase
+    command: sh /tmp/metabase-setup.sh metabase:3000
+  postgres-data1:
+    image: metabase/qa-databases:postgres-sample-12
+    container_name: postgres-data1
+    ports:
+      - 5433:5432
+    hostname: postgres-data1
+    networks: 
+      - metanet1
 networks: 
   metanet1:
     driver: bridge
