@@ -21,7 +21,7 @@ cat <<EOF
 
 Started Druid ${DRUID_VERSION} on ports ${WEB_PORT}, ${HOST_PORT}, and 8888.
 
-Visit http://localhost:${WEB_PORT} in your browser to view the web console.
+Visit ${HOST}:${WEB_PORT} in your browser to view the web console.
 
 EOF
 
